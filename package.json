@@ -1,0 +1,17 @@
+{
+  "name": "little-quarter",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src.js --bundle --minify --outfile=dist/app.js",
+    "dev": "node server.mjs",
+    "check": "node --check src.js && node --check environment.js && node --check entrances.js && node --check town.js && node --check movement.js && node --check content.js && node --check gallery.js && node --check interiors.js && node --check gallery-layout.js && node --check exhibit-models.js && node --check model-inspector.js && node --check gallery-room.js",
+    "test": "node entrances.test.mjs && node movement.test.mjs && node content.test.mjs && node interiors.test.mjs && node gallery.test.mjs && node exhibit-models.test.mjs && node model-inspector.test.mjs"
+  },
+  "dependencies": {
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.11"
+  }
+}

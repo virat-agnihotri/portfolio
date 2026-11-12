@@ -1,0 +1,37 @@
+{
+  "rocket": {
+    "path": "assets/models/rocket.glb",
+    "bytes": 3810276,
+    "sha256": "f54bc28f7b740effc4b3916662e17af89d5c205df570fdfc6fe693bc6650d2e5"
+  },
+  "lunar": {
+    "path": "assets/models/moon.glb",
+    "bytes": 13799876,
+    "sha256": "12d3b0bb7fe214903f51447d1bc61710f442e92a11c703fcaca6d4e7ff8e67d4"
+  },
+  "satellite": {
+    "path": "assets/models/satellite.glb",
+    "bytes": 4282060,
+    "sha256": "82d676ee69504d0ada21b81a184e454b232033fd498efe0b77cf9c69677f47ab"
+  },
+  "tone": {
+    "path": "assets/models/redbull.glb",
+    "bytes": 20022336,
+    "sha256": "3957140244ce51f081c3925b7d3df8d21afaff86072c598609989b9ca2dd48a2"
+  },
+  "mercedes": {
+    "path": "assets/models/mercedes.glb",
+    "bytes": 19772232,
+    "sha256": "438224636a7894e4c7da03fd07c4ab7e57506ee4a725e90163730b693d81f3cc"
+  },
+  "knowledge": {
+    "path": "assets/models/bookshelf.glb",
+    "bytes": 1717044,
+    "sha256": "2b1a1807565e177314f46fb342db00b76b76c1e260b194838f9f9d5b18131638"
+  },
+  "docintel": {
+    "path": "assets/models/brain-hologram.glb",
+    "bytes": 16978020,
+    "sha256": "c47864415c919ac0e8c5ac994652d60f04c60f75ee1cef432fd9a6785b7f41e9"
+  }
+}
