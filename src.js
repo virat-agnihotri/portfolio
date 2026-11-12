@@ -12,6 +12,7 @@ import { avoidGalleryPlinths } from './gallery-layout.js';
 import { createInteriors } from './interiors.js';
 import { ModelInspector } from './model-inspector.js';
 import { createGalleryRoom } from './gallery-room.js';
+import { createRoomDecor } from './room-decor.js';
 
 const rooms=[
  {id:'gallery',name:'The Gallery',kind:'PROJECTS & SELECTED WORK',number:'01',x:6.25,z:-4,cx:60,title:'A few things<br>I made.',description:'Five projects in scientific simulation, computer vision, and applied AI. Select a frame to explore the build.',action:'Discover the work ↗'},
@@ -20,7 +21,7 @@ const rooms=[
  {id:'contact',name:'The Post Office',kind:'LET’S MAKE SOMETHING',number:'04',x:-6.25,z:-39,cx:126,title:'The next<br>chapter.',description:'A project, a collaboration, or a technical conversation. Find my email, GitHub, LinkedIn, and résumé here.',action:'Write a little hello ↗'}
 ];
 const $=s=>document.querySelector(s);
-let scene,camera,renderer,world,atmosphere,entrances,interiors,galleryExhibits,galleryRoom,inspection,entrance=null,started=false,currentRoom=null,nearRoom=null,auto=false,transition=false,ready=false;
+let scene,camera,renderer,world,atmosphere,entrances,interiors,galleryExhibits,galleryRoom,roomDecor,inspection,entrance=null,started=false,currentRoom=null,nearRoom=null,auto=false,transition=false,ready=false;
 let yaw=0,pitch=0,drag=false,pointerDistance=0,lastPointer={x:0,y:0},position=new THREE.Vector3(0,1.75,16),returnPosition=position.clone(),returnYaw=0;
 let keys=new Set(),visited=new Set(),time=0,lastTime=performance.now(),audio=null,toastTimer;
 let glance=0,lastManualLook=-10,hoveredDoor=null,pressedDoor=null,pointerKnown=false;
@@ -29,26 +30,27 @@ try{visited=new Set(JSON.parse(localStorage.getItem('little-quarter-places')||'[
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const map=$('#map'),details=$('#details'),modals=()=>map.open||details.open;
 function toast(message){$('#toast').textContent=message;$('#toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('visible'),3200);}
-function saveVisit(room){const wasNew=!visited.has(room.id);visited.add(room.id);try{localStorage.setItem('little-quarter-places',JSON.stringify([...visited]));}catch{}$('#stamp-count').textContent=`${visited.size} / 4`;if(wasNew)toast(`A new place discovered — ${room.name}`);}
-$('#stamp-count').textContent=`${visited.size} / 4`;
-function begin(){if(!ready){openMap();return;}started=true;$('#welcome').classList.add('away');$('#welcome').inert=true;document.body.classList.add('exploring');$('#crosshair').hidden=false;}
+function updateVisits(){document.querySelectorAll('[data-room]').forEach(button=>{const seen=visited.has(button.dataset.room);button.classList.toggle('visited',seen);button.querySelector('b').textContent=seen?'✓':'↗';});}
+function saveVisit(room){visited.add(room.id);try{localStorage.setItem('little-quarter-places',JSON.stringify([...visited]));}catch{}updateVisits();}
+function begin(){if(!ready){openMap();return;}started=true;document.body.classList.add('exploring');$('#crosshair').hidden=false;}
 function stopWalking(){keys.clear();walkVelocity.set(0,0);scrollImpulse=0;drag=false;pressedDoor=null;}
 function openMap(){if(transition||inspection?.busy)return;stopWalking();if(!map.open)map.showModal();}
 function closeDialogs(){map.close();details.close();stopWalking();}
 $('#map-button').onclick=openMap;
+$('#controls-help').onclick=()=>{if(transition||inspection?.busy)return;stopWalking();$('#detail-content').innerHTML='<div class="eyebrow">A QUICK GUIDE</div><h2>Make yourself<br>at home.</h2><div class="control-guide"><p><kbd>W A S D</kbd><span>Walk around</span></p><p><kbd>Drag</kbd><span>Look around</span></p><p><kbd>Scroll</kbd><span>Walk forward or backward</span></p><p><kbd>E</kbd><span>Enter a nearby building</span></p><p><kbd>M</kbd><span>Open the map</span></p><p><kbd>Esc</kbd><span>Close a view or leave a room</span></p></div><p class="detail-body">Click a model to rotate and zoom it. Click a poster to read the project.</p><button class="secondary-button" id="help-tour">Take an automatic stroll ↗</button>';$('#help-tour').onclick=()=>{details.close();$('#tour').click();};details.showModal();};
 $('#stamps').onclick=()=>{openMap();toast(visited.size===4?'All four places discovered. Make yourself at home.':`${4-visited.size} more places to discover.`);};
 $('#map-places').innerHTML=rooms.map(r=>`<button class="map-place" data-room="${r.id}"><span>${r.number}</span><div><strong>${r.name}</strong><small>${r.kind}</small></div><b>↗</b></button>`).join('');
-document.querySelectorAll('[data-room]').forEach(b=>b.onclick=()=>enterRoom(rooms.find(r=>r.id===b.dataset.room)));
+document.querySelectorAll('[data-room]').forEach(b=>b.onclick=()=>enterRoom(rooms.find(r=>r.id===b.dataset.room)));updateVisits();
 document.querySelectorAll('dialog .close').forEach(b=>b.onclick=()=>b.closest('dialog').close());
 document.querySelectorAll('dialog').forEach(d=>{d.addEventListener('close',stopWalking);d.addEventListener('click',e=>{if(e.target!==d)return;const b=d.getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)d.close();});});
 function updateTour(){$('#tour').textContent=auto?'Ⅱ Pause stroll':'▷ Take a stroll';}
-$('#start').onclick=()=>{begin();toast('WASD or scroll to walk. Drag to look. M opens your map.');};
+
 $('#tour').onclick=()=>{if(transition)return;begin();if(currentRoom)leaveRoom();auto=!auto;updateTour();};
 $('#compass').onclick=()=>{if(transition)return;yaw=0;pitch=0;glance=0;lastManualLook=time;toast('Facing north. Follow the street.');};
-$('#home').onclick=()=>{if(transition)return;closeDialogs();interiors?.setActive(null);atmosphere?.setInterior(false);entrances?.reset();entrances?.hover(null);hoveredDoor=null;pointerKnown=false;glance=0;canvas.style.cursor='';auto=false;updateTour();currentRoom=null;started=false;position.set(0,1.75,16);yaw=0;pitch=0;$('#welcome').classList.remove('away');$('#welcome').inert=false;document.body.classList.remove('exploring','room-open','gallery-room');$('#room-info').hidden=true;$('#back-street').hidden=true;$('#crosshair').hidden=true;};
+$('#home').onclick=()=>{if(transition)return;closeDialogs();roomDecor?.setActive(null);interiors?.setActive(null);atmosphere?.setInterior(false);entrances?.reset();entrances?.hover(null);hoveredDoor=null;pointerKnown=false;glance=0;canvas.style.cursor='';auto=false;updateTour();currentRoom=null;started=true;position.set(0,1.75,16);yaw=0;pitch=0;document.body.classList.add('exploring');document.body.classList.remove('room-open','gallery-room');$('#room-info').hidden=true;$('#back-street').hidden=true;$('#crosshair').hidden=true;};
 function fadeMove(fn){if(transition)return;transition=true;const canvas=$('#world');canvas.style.transition=reduced?'none':'opacity .2s';canvas.style.opacity='0';setTimeout(()=>{fn();canvas.style.opacity='1';transition=false;},reduced?0:200);}
-function revealRoom(room){document.body.classList.toggle('gallery-room',room.id==='gallery');interiors.setActive(room.id);atmosphere.setInterior(true);currentRoom=room;position.set(room.cx,1.75,.5);yaw=0;pitch=0;saveVisit(room);document.body.classList.add('room-open');$('#room-info').hidden=false;$('#back-street').hidden=false;$('#room-number').textContent=`${room.number} / ${room.name.toUpperCase()}`;$('#room-title').innerHTML=room.title;$('#room-description').textContent=room.description;$('#room-action').textContent=room.action;$('#location').textContent=room.name;$('#interaction').hidden=true;}
-function enterRoom(room){if(transition||!room)return;closeDialogs();if(!ready){openRoomDetails(room);return;}interiors.setActive(null);atmosphere.setInterior(false);yaw=wrapAngle(yaw+glance);glance=0;entrances.hover(null);hoveredDoor=null;pointerKnown=false;canvas.style.cursor='';auto=false;updateTour();begin();
+function revealRoom(room){roomDecor.setActive(room.id);document.body.classList.toggle('gallery-room',room.id==='gallery');interiors.setActive(room.id);atmosphere.setInterior(true);currentRoom=room;position.set(room.cx,1.75,.5);yaw=0;pitch=0;saveVisit(room);document.body.classList.add('room-open');$('#room-info').hidden=false;$('#back-street').hidden=false;$('#room-number').textContent=`${room.number} / ${room.name.toUpperCase()}`;$('#room-title').innerHTML=room.title;$('#room-description').textContent=room.description;$('#room-action').textContent=room.action;$('#location').textContent=room.name;$('#interaction').hidden=true;}
+function enterRoom(room){if(transition||!room)return;closeDialogs();if(!ready){openRoomDetails(room);return;}roomDecor?.setActive(null);interiors.setActive(null);atmosphere.setInterior(false);yaw=wrapAngle(yaw+glance);glance=0;entrances.hover(null);hoveredDoor=null;pointerKnown=false;canvas.style.cursor='';auto=false;updateTour();begin();
  const side=Math.sign(room.x),doorway=new THREE.Vector3(side*6.3,1.65,room.z),approach=new THREE.Vector3(side*3.5,1.75,room.z),faceYaw=-side*Math.PI/2;
  returnPosition.copy(approach);returnYaw=faceYaw;if(currentRoom){position.set(0,1.75,room.z+7);yaw=0;pitch=0;currentRoom=null;document.body.classList.remove('room-open');$('#room-info').hidden=true;$('#back-street').hidden=true;}
  entrances.reset();if(reduced){fadeMove(()=>revealRoom(room));return;}
@@ -64,7 +66,7 @@ function updateEntrance(dt){if(!entrance)return;const shot=entrance;shot.elapsed
  if(pose.stage==='fade')$('#world').style.opacity=String(pose.opacity);
  if(pose.stage==='complete'){entrance=null;revealRoom(shot.room);entrances.reset();renderer.shadowMap.needsUpdate=true;$('#world').style.transition='opacity .3s';$('#world').style.opacity='1';transition=false;document.body.classList.remove('entering');keys.clear();}
 }
-function leaveRoom(){if(!currentRoom||transition)return;auto=false;updateTour();stopWalking();fadeMove(()=>{currentRoom=null;document.body.classList.remove('gallery-room');interiors.setActive(null);atmosphere.setInterior(false);entrances.reset();position.copy(returnPosition);yaw=returnYaw;pitch=0;lastManualLook=time;document.body.classList.remove('room-open');$('#room-info').hidden=true;$('#back-street').hidden=true;});}
+function leaveRoom(){if(!currentRoom||transition)return;auto=false;updateTour();stopWalking();fadeMove(()=>{currentRoom=null;document.body.classList.remove('gallery-room');roomDecor?.setActive(null);interiors.setActive(null);atmosphere.setInterior(false);entrances.reset();position.copy(returnPosition);yaw=returnYaw;pitch=0;lastManualLook=time;document.body.classList.remove('room-open');$('#room-info').hidden=true;$('#back-street').hidden=true;});}
 $('#back-street').onclick=leaveRoom;
 $('#room-action').onclick=()=>openRoomDetails(currentRoom);
 function startInspection(index){
@@ -112,13 +114,13 @@ try{
  new GLTFLoader().load('assets/neighborhood.glb',gltf=>{
    // Batch the static Blender meshes by material to avoid thousands of draw
    // calls. Keep the six gallery targets separate for ray picking.
-   gltf.scene.updateMatrixWorld(true);world=new THREE.Group();entrances=createEntrances(rooms,world);interiors=createInteriors(rooms,world,scene);galleryRoom=createGalleryRoom(world,scene);const batches=new Map(),edgeParts=[],styled=new Set();
-   gltf.scene.traverse(o=>{if(!o.isMesh||/^project_(frame|art|label)_?/.test(o.name)||/^(display_pedestal|exhibit|gallery_viewing_bench|gallery_bench_leg|gallery_picture_light)/.test(o.name))return;const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(o.matrixWorld);for(const attr of Object.keys(g.attributes))if(!['position','normal'].includes(attr))g.deleteAttribute(attr);if(!g.attributes.normal)g.computeVertexNormals();
+   gltf.scene.updateMatrixWorld(true);world=new THREE.Group();entrances=createEntrances(rooms,world);interiors=createInteriors(rooms,world,scene);galleryRoom=createGalleryRoom(world,scene);roomDecor=createRoomDecor(rooms,world);const batches=new Map(),edgeParts=[],styled=new Set();
+   gltf.scene.traverse(o=>{if(!o.isMesh||/^project_(frame|art|label)_?/.test(o.name)||/^(display_pedestal|exhibit|gallery_viewing_bench|gallery_bench_leg|gallery_picture_light|about_armchair|about_armrest|about_reading_rug)/.test(o.name))return;const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(o.matrixWorld);for(const attr of Object.keys(g.attributes))if(!['position','normal'].includes(attr))g.deleteAttribute(attr);if(!g.attributes.normal)g.computeVertexNormals();
    worldUV(g,o.material);if(!styled.has(o.material.uuid)){styleMaterial(o.material);styled.add(o.material.uuid);}
    if(interiors.extract(o,g,o.material)||entrances.extract(o,g,o.material))return;
    const n=o.name.toLowerCase();if(!n.includes('foliage')&&!n.includes('plant')&&!n.includes('sign_')&&!n.includes('label')&&!n.includes('text')&&!n.includes('seam')&&!n.includes('joint')&&!n.includes('wire')&&!n.includes('bulb')&&g.attributes.position.count<5000)edgeParts.push(new THREE.EdgesGeometry(g,35));
    if(/^project_(?:frame|art)_/.test(o.name)){const target=new THREE.Mesh(g,o.material);target.name=o.name;world.add(target);}else{if(!batches.has(o.material.uuid))batches.set(o.material.uuid,{material:o.material,parts:[]});batches.get(o.material.uuid).parts.push(g);}});
-   entrances.finish();galleryExhibits=createGalleryExhibits(world,projects,{reduced});batches.forEach(b=>{const combined=mergeGeometries(b.parts);if(combined){const batch=new THREE.Mesh(combined,b.material);batch.castShadow=!['road','stone','paper','cream'].includes(b.material.name);batch.receiveShadow=true;world.add(batch);}b.parts.forEach(g=>g.dispose());});const inkGeometry=mergeGeometries(edgeParts);if(inkGeometry){const outlines=new THREE.LineSegments(inkGeometry,edgeMaterial);outlines.raycast=()=>{};world.add(outlines);}edgeParts.forEach(g=>g.dispose());scene.add(world);renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;ready=true;$('#load-progress').style.width='100%';$('#loading').hidden=true;requestAnimationFrame(frame);
+   entrances.finish();galleryExhibits=createGalleryExhibits(world,projects,{reduced});batches.forEach(b=>{const combined=mergeGeometries(b.parts);if(combined){const batch=new THREE.Mesh(combined,b.material);batch.castShadow=!['road','stone','paper','cream'].includes(b.material.name);batch.receiveShadow=true;world.add(batch);}b.parts.forEach(g=>g.dispose());});const inkGeometry=mergeGeometries(edgeParts);if(inkGeometry){const outlines=new THREE.LineSegments(inkGeometry,edgeMaterial);outlines.raycast=()=>{};world.add(outlines);}edgeParts.forEach(g=>g.dispose());scene.add(world);renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;ready=true;$('#load-progress').style.width='100%';$('#loading').hidden=true;begin();requestAnimationFrame(frame);
  },event=>{if(event.total){let p=Math.round(event.loaded/event.total*100);$('#load-progress').style.width=p+'%';$('#load-label').textContent=`Unfolding the street · ${p}%`;}},error=>{console.error('Neighborhood model failed to load',error);fallback('The scene could not load. All portfolio sections are available from the map.');});
 }catch(error){console.error(error);fallback('3D is unavailable in this browser. You can still explore the portfolio sections.');}
 

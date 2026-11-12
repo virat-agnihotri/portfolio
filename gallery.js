@@ -18,6 +18,7 @@ function poster(project,index){
  };const result=texture(paint);document.fonts?.ready.then(()=>{paint(result.canvas.getContext('2d'),1024,768);result.map.needsUpdate=true;});if(galleryScreenshots[project.id]){const image=new Image();image.onload=()=>{screenshot=image;paint(result.canvas.getContext('2d'),1024,768);result.map.needsUpdate=true;};image.src=galleryScreenshots[project.id];}return result.map;
 }
 export function createGalleryExhibits(world,projects,{reduced=false}={}){
+ const galleryRoot=new THREE.Group();galleryRoot.name='Cached gallery exhibits';galleryRoot.visible=false;world.add(galleryRoot);world=galleryRoot;
  const materials={dark:new THREE.MeshStandardMaterial({color:ink,roughness:.7}),trim:new THREE.MeshStandardMaterial({color:'#b99a65',metalness:.45,roughness:.4}),stone:new THREE.MeshStandardMaterial({color:'#59615a',roughness:.85}),paper:new THREE.MeshStandardMaterial({color:cream,roughness:.85})};
  const exhibits=new Map(),animated=[],colliders=[],modelQueue=createExhibitModelQueue({reduced});
  function mesh(group,geometry,material,position=[0,0,0]){const o=new THREE.Mesh(geometry,material);o.position.set(...position);group.add(o);return o;}
@@ -43,5 +44,5 @@ export function createGalleryExhibits(world,projects,{reduced=false}={}){
   else if(slot.id==='docintel')enqueue(galleryModels.docintel,modelGroup,[1.2,1.5,1.2]);
   root.traverse(o=>o.userData.projectIndex=index);stand.traverse(o=>{o.userData.projectIndex=index;o.userData.isExhibitStand=true;});
  }
- return{colliders,get:index=>exhibits.get(index),update(dt,inGallery,position,paused=false){modelQueue.update(dt,inGallery,position,!paused);if(inGallery&&!reduced&&!paused)animated.forEach(orbit=>orbit.rotation.y+=dt*.35);}};
+ return{colliders,root:galleryRoot,get:index=>exhibits.get(index),update(dt,inGallery,position,paused=false){galleryRoot.visible=inGallery;modelQueue.update(dt,inGallery,position,!paused);if(inGallery&&!reduced&&!paused)animated.forEach(orbit=>orbit.rotation.y+=dt*.35);}};
 }

@@ -12,15 +12,16 @@ export function fitExhibitModel(model,limits,{centered=false,upright=false,longA
  box.setFromObject(wrapper);const center=box.getCenter(new THREE.Vector3());wrapper.position.set(-center.x,centered?-center.y:-box.min.y,-center.z);wrapper.updateMatrixWorld(true);return wrapper;
 }
 
-// Models start loading only while the visitor approaches their gallery plinth.
+// Models start loading when the visitor enters the gallery.
 // Two concurrent loads limit decoding/memory pressure; revisits reuse the scene.
-export function createExhibitModelQueue({reduced=false}={}){
- const draco=new DRACOLoader().setDecoderPath('assets/draco/').setWorkerLimit(1);const loader=new GLTFLoader().setDRACOLoader(draco);
+export function createExhibitModelQueue({reduced=false,assetLoader=null}={}){
+ const loader=assetLoader||new GLTFLoader().setDRACOLoader(new DRACOLoader().setDecoderPath('assets/draco/').setWorkerLimit(1));
  const jobs=[],mixers=[];let active=false,running=0;
  function pump(){if(!active)return;while(running<2){const job=jobs.filter(j=>j.state==='queued').sort((a,b)=>a.distance-b.distance)[0];if(!job)return;job.state='loading';running++;loader.load(job.path,gltf=>{
    try{const model=fitExhibitModel(gltf.scene,job.limits,job.options);model.traverse(o=>{o.userData.projectIndex=job.group.userData.projectIndex;o.userData.isExhibitModel=true;});job.group.add(model);if(!reduced&&gltf.animations.length){const mixer=new THREE.AnimationMixer(gltf.scene);gltf.animations.forEach(clip=>mixer.clipAction(clip).play());mixers.push(mixer);}job.state='loaded';job.onReady?.(model);}
    catch(error){job.state='failed';console.warn('Could not fit exhibit model:',job.path,error);}finally{running--;pump();}
   },undefined,error=>{job.state='failed';running--;console.warn('Could not load exhibit model:',job.path,error);pump();});}}
  function add({path,group,anchor,limits=[1.4,1.6,1.4],options={},onReady}){const job={path,group,anchor:new THREE.Vector3(...anchor),limits,options,onReady,state:'idle',distance:Infinity};jobs.push(job);return job;}
- return{add,update(dt,inGallery,position,animate=true){active=inGallery;if(active){jobs.forEach(job=>{job.distance=position.distanceTo(job.anchor);if(job.state==='idle'&&job.distance<10)job.state='queued';});if(animate)mixers.forEach(mixer=>mixer.update(dt));pump();}}};
+ return{add,update(dt,inGallery,position,animate=true){active=inGallery;if(active){jobs.forEach(job=>{job.distance=position.distanceTo(job.anchor);if(job.state==='idle')job.state='queued';});if(animate)mixers.forEach(mixer=>mixer.update(dt));pump();}}};
 }
+

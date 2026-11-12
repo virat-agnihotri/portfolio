@@ -108,3 +108,13 @@ Click a model or its plinth to inspect it. Drag horizontally to rotate the exhib
 `galleryScreenshots` in `gallery-layout.js` reserves one local screenshot path per project. No screenshot files have been supplied yet; current project-specific artwork remains. When actual screenshots are provided, their paths can be assigned without replacing the frames, labels, or model layout.
 
 `node model-inspector.test.mjs` covers camera focus, view direction, rotation, zoom bounds, reset, return, ceiling clearance, and active lighting limits. The frontend server is not needed for these checks; a browser visual review remains pending.
+
+## Direct entry, minimal HUD, and cached Gallery lifecycle
+
+The intro screen is removed. Once the neighborhood model loads, exploration starts immediately. The main HUD shows only compact navigation and location controls; movement instructions are available from the ? button, and visited rooms are indicated inside the map.
+
+Entering the Gallery queues all seven model assets with at most two requests in progress. Leaving hides the entire exhibit group and stops its satellite/embedded-animation updates. Loaded objects remain in an in-memory session cache; returning reuses them without another request. Already-started downloads can finish into that cache after exit, while queued requests wait for re-entry. This is session reuse, not a promise of permanent caching across browser reloads.
+
+`room-decor.js` adds room-specific fitted finishes, warm plank floors, diffused window panels, softer seating, and reading/writing areas. Dynamic decor is visible only in the active room. The architectural Blender shell remains intact underneath these presentation layers.
+
+`node gallery-lifecycle.test.mjs` verifies entry-only loading, bounded concurrency, all-model queueing, animation pause on exit, cache reuse, and active-room-only decor. Browser visual QA is deferred until a deployed URL or an authorized local preview is available.
