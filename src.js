@@ -30,7 +30,7 @@ try{visited=new Set(JSON.parse(localStorage.getItem('little-quarter-places')||'[
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const map=$('#map'),details=$('#details'),modals=()=>map.open||details.open;
 function toast(message){$('#toast').textContent=message;$('#toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('visible'),3200);}
-function updateVisits(){document.querySelectorAll('[data-room]').forEach(button=>{const seen=visited.has(button.dataset.room);button.classList.toggle('visited',seen);button.querySelector('b').textContent=seen?'✓':'↗';});}
+function updateVisits(){document.querySelectorAll('#map-places .map-place[data-room]').forEach(button=>{const seen=visited.has(button.dataset.room);button.classList.toggle('visited',seen);button.querySelector('b').textContent=seen?'✓':'↗';});}
 function saveVisit(room){visited.add(room.id);try{localStorage.setItem('little-quarter-places',JSON.stringify([...visited]));}catch{}updateVisits();}
 function begin(){if(!ready){openMap();return;}started=true;document.body.classList.add('exploring');$('#crosshair').hidden=false;}
 function stopWalking(){keys.clear();walkVelocity.set(0,0);scrollImpulse=0;drag=false;pressedDoor=null;}
