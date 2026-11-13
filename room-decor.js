@@ -11,6 +11,7 @@ export function createRoomDecor(rooms,world,{textures=true,reduced=false,onConta
  let skillsExhibition,contactCrates,aboutHouse;const groups=new Map(),woodMap=textures?floorTexture():null;
  const mat=color=>new THREE.MeshStandardMaterial({color,roughness:.9});const wood=new THREE.MeshStandardMaterial({color:'#8e7354',map:woodMap,roughness:.8}),brass=new THREE.MeshStandardMaterial({color:'#b49a6a',metalness:.4,roughness:.5}),dark=mat('#37483f');
  for(const room of rooms){const group=new THREE.Group();group.name=room.id+' fitted interior';group.position.set(room.cx,0,-5);group.visible=false;world.add(group);groups.set(room.id,group);
+  if(room.id==='studio'){aboutHouse=createAboutHouse(group,{textures});continue;}
   const palette={gallery:{wall:'#48534d',accent:'#5b665c',fabric:'#817965'},about:{wall:'#293c55',accent:'#1a2b40',fabric:'#a5b6c7'},studio:{wall:'#d5bca8',accent:'#80595b',fabric:'#dfc7aa'},contact:{wall:'#24444b',accent:'#142e35',fabric:'#9f6150'}}[room.id];
   const accent=mat(palette.accent),fabric=mat(palette.fabric),wall=mat(palette.wall),roomTrim=room.id==='contact'?new THREE.MeshStandardMaterial({color:'#b98565',metalness:.5,roughness:.5}):brass;
   function box(size,position,material=wood,round=false,parent=group){const mesh=new THREE.Mesh(round?new RoundedBoxGeometry(...size,2,.065):new THREE.BoxGeometry(...size),material);mesh.position.set(...position);parent.add(mesh);return mesh;}
@@ -33,16 +34,9 @@ export function createRoomDecor(rooms,world,{textures=true,reduced=false,onConta
    box([2.65,.2,.76],[3,.55,5.9],fabric,true);for(const x of [1.95,4.05])box([.1,.48,.53],[x,.27,5.9],roomTrim);
   }else if(room.id==='about'){
    skillsExhibition=createSkillsExhibition(group,{textures});
-  }else if(room.id==='studio'){
-   box([5.7,.025,4.5],[2.1,.125,.6],mat('#b4957c'));box([5.4,.012,4.2],[2.1,.146,.6],mat('#c6ae92'));
-   chair(4.55,.5,-Math.PI/2,2.8);chair(-4.55,.3,Math.PI/2,1.8);
-   box([1.5,.13,1.2],[2.3,.54,.6],wood,true);for(const x of [1.73,2.87])for(const z of [.17,1.03])box([.075,.47,.075],[x,.28,z],roomTrim);
-   for(let i=0;i<3;i++)box([.63,.055,.42],[2.3,.65+i*.06,.6],i%2?accent:mat('#eee1cd'));
-   aboutHouse=createAboutHouse(group,{textures});
-   for(const side of [-1,1])for(let i=0;i<8;i++)box([.065,1.02,.045],[side*6.17,.77,-6+i*1.75],wood);
   }else{
    contactCrates=createContactCrates(group,{textures,reduced,onReveal:onContactReveal});
   }
  }
- return{groups,contactCrates,aboutHouse,update(dt){contactCrates?.update(dt);},setActive(id){groups.forEach((group,key)=>group.visible=key===id);if(id==='about')skillsExhibition?.activate();contactCrates?.setActive(id==='contact');}};
+ return{groups,contactCrates,aboutHouse,update(dt){contactCrates?.update(dt);},setActive(id){groups.forEach((group,key)=>group.visible=key===id);if(id==='about')skillsExhibition?.activate();if(id==='studio')aboutHouse?.activate();contactCrates?.setActive(id==='contact');}};
 }
