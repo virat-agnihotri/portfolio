@@ -187,7 +187,7 @@ for idx,key in enumerate(['gallery','about','studio','contact']):
         box('journal_table',(x,8,1),(5,2.1,.2),'wood')
         for dx in [-2.1,2.1]:box('table_support',(x+dx,8,.5),(.15,1.7,1),'ink')
         book=box('about_journal',(x,7.5,1.15),(1.8,1.3,.12),'yellow');book.rotation_euler.z=.16
-        for dx in [-3,3]:tree(x+dx,10,.85)
+        # Skills exhibition: keep the carpet and wall displays free of trees.
     elif key=='studio':
         for dx in [-3,3]:
             box('workbench',(x+dx,9,1),(4,1.4,.18),'wood')
@@ -198,7 +198,7 @@ for idx,key in enumerate(['gallery','about','studio','contact']):
         box('post_counter',(x,9,.7),(7,1.5,1.4),'teal')
         for j in range(3):box('letter',(x-2+j*2,8.8,1.45),(1.3,.7,.035),'paper')
         for j in range(8):box('mailbox',(x-4.8+(j%4)*.7,12,1.5+(j//4)*.9),(.6,.6,.7),'yellow')
-    for dx in [-5,5]:
+    for dx in ([] if key=='about' else [-5,5]):
         cyl('room_planter',(x+dx,10,.4),.4,.8,'pink');ball('room_plant',(x+dx,10,1.3),(.6,.5,.8),'leaf')
 
 # Useful camera and lighting for opening the source in Blender.
