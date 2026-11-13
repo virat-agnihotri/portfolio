@@ -129,3 +129,10 @@ The Gallery shows explicit Inspect model / Read project buttons for the closest 
 The About journal includes supplied hackathon names and editable draft thoughts/aims in `content.js`. Contact links include Instagram and X. The validated contact form opens an email draft with encoded subject and body; it does not send mail from the server or claim a message has been delivered.
 
 Offline checks cover door clearance, exhibit routes from corners and other displays, view direction, reduced motion, content links, and the existing room/model lifecycle. Browser visual review remains pending; the local frontend server was not started.
+## Skills House exhibition
+
+`skills-exhibition.js` replaces the former reading-room furniture with a burgundy central carpet, gold piping, and 34 raised brass-edged frames. The sequence follows `profile.skills`: 12 frames down the left wall, 10 across the front wall, then 12 along the right. Two rows keep all artwork below the ceiling and leave the walking aisle clear. Warm picture-light strips and lightly emissive artwork keep the displays readable without adding dozens of dynamic lights.
+
+19 local SVG assets come from [Devicon](https://github.com/devicons/devicon). Their license and source URLs are bundled in `dist/assets/technology-logos/`. Shared ecosystems reuse their relevant logo; skills without an included distinct logo use a named typography card rather than an invented brand symbol. The cards share one canvas texture atlas. SVG requests start on the first Skills House entry, and the loaded atlas stays cached during the session. The room group stays hidden outside that house.
+
+`node skills-exhibition.test.mjs` checks coverage of every skill, wall order, inward-facing frames, spacing, carpet clearance, and local logo/license availability. No frontend server was started; browser visual review remains pending.

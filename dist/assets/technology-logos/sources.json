@@ -1,0 +1,78 @@
+{
+  "python": {
+    "file": "python.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg"
+  },
+  "cplusplus": {
+    "file": "cplusplus.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/cplusplus/cplusplus-original.svg"
+  },
+  "javascript": {
+    "file": "javascript.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg"
+  },
+  "typescript": {
+    "file": "typescript.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/typescript/typescript-original.svg"
+  },
+  "html5": {
+    "file": "html5.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/html5/html5-original.svg"
+  },
+  "css3": {
+    "file": "css3.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/css3/css3-original.svg"
+  },
+  "react": {
+    "file": "react.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original.svg"
+  },
+  "fastapi": {
+    "file": "fastapi.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/fastapi/fastapi-original.svg"
+  },
+  "postgresql": {
+    "file": "postgresql.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/postgresql/postgresql-original.svg"
+  },
+  "sqlite": {
+    "file": "sqlite.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/sqlite/sqlite-original.svg"
+  },
+  "sqlalchemy": {
+    "file": "sqlalchemy.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/sqlalchemy/sqlalchemy-original.svg"
+  },
+  "supabase": {
+    "file": "supabase.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/supabase/supabase-original.svg"
+  },
+  "pytorch": {
+    "file": "pytorch.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/pytorch/pytorch-original.svg"
+  },
+  "huggingface": {
+    "file": "huggingface.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/huggingface/huggingface-original.svg"
+  },
+  "opencv": {
+    "file": "opencv.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/opencv/opencv-original.svg"
+  },
+  "numpy": {
+    "file": "numpy.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/numpy/numpy-original.svg"
+  },
+  "threejs": {
+    "file": "threejs.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/threejs/threejs-original.svg"
+  },
+  "git": {
+    "file": "git.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/git/git-original.svg"
+  },
+  "pytest": {
+    "file": "pytest.svg",
+    "source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/pytest/pytest-original.svg"
+  }
+}
