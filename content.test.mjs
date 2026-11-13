@@ -1,3 +1,4 @@
+import {galleryScreenshots} from './gallery-layout.js';
 import assert from 'node:assert/strict';
 import { readFile,stat } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
@@ -18,3 +19,5 @@ const app=await readFile(new URL('./src.js',import.meta.url),'utf8');assert.ok(a
 console.log('Passed: five real project entries, contact and education content, presentation assets, source links, and unchanged résumé download.');
 
 assert.ok(contactHTML().includes('https://www.instagram.com/virat_.a.g/'));assert.ok(contactHTML().includes('https://x.com/ViratAgnihotrii'));assert.ok(contactHTML().includes('id="contact-form"'));assert.ok(aboutHTML().includes('IIIT Delhi'));assert.ok(aboutHTML().includes('Adobe Hackathon'));assert.ok(aboutHTML().includes('What I’m working toward'));
+
+for(const id of ['lunar','tone','knowledge','docintel'])assert.equal(projects.find(project=>project.id===id).image,galleryScreenshots[id],'Wall poster and reading page use the same supplied image');assert.equal(galleryScreenshots.rocket,null);assert.equal(projects.find(project=>project.id==='rocket').image,null);

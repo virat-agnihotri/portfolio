@@ -41,7 +41,7 @@ function stopWalking(){keys.clear();walkVelocity.set(0,0);scrollImpulse=0;drag=f
 function openMap(){if(transition||inspection?.busy)return;stopWalking();if(!map.open)map.showModal();}
 function closeDialogs(){map.close();details.close();stopWalking();}
 $('#map-button').onclick=openMap;
-$('#controls-help').onclick=()=>{if(transition||inspection?.busy)return;stopWalking();$('#detail-content').innerHTML='<div class="eyebrow">A QUICK GUIDE</div><h2>Make yourself<br>at home.</h2><div class="control-guide"><p><kbd>W A S D</kbd><span>Walk around</span></p><p><kbd>Drag</kbd><span>Look around</span></p><p><kbd>Scroll</kbd><span>Walk forward or backward</span></p><p><kbd>E</kbd><span>Enter a nearby building</span></p><p><kbd>M</kbd><span>Open the map</span></p><p><kbd>Esc</kbd><span>Close a view or leave a room</span></p></div><p class="detail-body">Click a model to rotate and zoom it. Click a poster to read the project.</p><button class="secondary-button" id="help-tour">Take an automatic stroll ↗</button>';$('#help-tour').onclick=()=>{details.close();$('#tour').click();};details.showModal();};
+$('#controls-help').onclick=()=>{if(transition||inspection?.busy)return;stopWalking();details.classList.remove('project-reading');$('#detail-content').innerHTML='<div class="eyebrow">A QUICK GUIDE</div><h2>Make yourself<br>at home.</h2><div class="control-guide"><p><kbd>W A S D</kbd><span>Walk around</span></p><p><kbd>Drag</kbd><span>Look around</span></p><p><kbd>Scroll</kbd><span>Walk forward or backward</span></p><p><kbd>E</kbd><span>Enter a nearby building</span></p><p><kbd>M</kbd><span>Open the map</span></p><p><kbd>Esc</kbd><span>Close a view or leave a room</span></p></div><p class="detail-body">Click a model to rotate and zoom it. Click a poster to read the project.</p><button class="secondary-button" id="help-tour">Take an automatic stroll ↗</button>';$('#help-tour').onclick=()=>{details.close();$('#tour').click();};details.showModal();};
 $('#stamps').onclick=()=>{openMap();toast(visited.size===4?'All four places discovered. Make yourself at home.':`${4-visited.size} more places to discover.`);};
 $('#map-places').innerHTML=rooms.map(r=>`<button class="map-place" data-room="${r.id}"><span>${r.number}</span><div><strong>${r.name}</strong><small>${r.kind}</small></div><b>↗</b></button>`).join('');
 document.querySelectorAll('[data-room]').forEach(b=>b.onclick=()=>enterRoom(rooms.find(r=>r.id===b.dataset.room)));updateVisits();
@@ -88,7 +88,7 @@ $('#inspect-pause').onclick=()=>{inspection.paused=!inspection.paused;$('#inspec
 $('#inspect-project').onclick=()=>{const index=inspection.index;inspection.close();openProject(index);};
 
 function openRoomDetails(room){
- if(!room)return;stopWalking();
+ if(!room)return;stopWalking();details.classList.toggle('project-reading',room.id==='gallery');
  const render={gallery:galleryHTML,about:skillsHTML,studio:aboutHTML,contact:contactHTML};
  $('#detail-content').innerHTML=render[room.id]();if(room.id==='contact'&&currentRoom?.id==='contact'){$('#detail-content').insertAdjacentHTML('afterbegin',contactCratePickerHTML());document.querySelectorAll('[data-contact-crate]').forEach(button=>button.onclick=()=>{closeDialogs();roomDecor.contactCrates.detonate(button.dataset.contactCrate);});}
  document.querySelectorAll('[data-project]').forEach(button=>button.onclick=()=>{const index=Number(button.dataset.project);if(currentRoom?.id==='gallery')goToExhibit(index);else openProject(index);});
@@ -99,7 +99,7 @@ function openRoomDetails(room){
 function openContactAccount(id){
  if(currentRoom?.id!=='contact'||map.open||details.open||transition)return;
  stopWalking();if(id==='message'){openRoomDetails(currentRoom);$('#contact-form')?.scrollIntoView({block:'center'});return;}
- $('#detail-content').innerHTML=contactAccountHTML(id);$('#all-contacts').onclick=()=>openRoomDetails(currentRoom);details.showModal();
+ details.classList.remove('project-reading');$('#detail-content').innerHTML=contactAccountHTML(id);$('#all-contacts').onclick=()=>openRoomDetails(currentRoom);details.showModal();
 }
 function goToExhibit(index){
  const exhibit=galleryExhibits?.get(index);if(!exhibit||currentRoom?.id!=='gallery'||inspection?.busy)return;
@@ -113,7 +113,7 @@ function updateExhibitActions(){
  const exhibit=galleryExhibits.get(nearestExhibit);$('#exhibit-name').textContent=projects[nearestExhibit].shortTitle;const loaded=exhibit.jobs.some(job=>job.state==='loaded');$('#exhibit-inspect').disabled=!loaded;$('#exhibit-inspect').textContent=loaded?'Inspect model ↔':'Model loading…';
 }
 function openProject(index){
- if(!projects[index])return;stopWalking();$('#detail-content').innerHTML=projectHTML(index);
+ if(!projects[index])return;stopWalking();details.classList.add('project-reading');$('#detail-content').innerHTML=projectHTML(index);
  $('#all-work').onclick=()=>openRoomDetails(rooms[0]);$('#close-project').onclick=()=>details.close();
  if(!details.open)details.showModal();
 }

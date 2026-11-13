@@ -11,9 +11,9 @@ export const galleryModels={
  knowledge:'assets/models/bookshelf.glb',docintel:'assets/models/brain-hologram.glb'
 };
 
-// Add the user's actual project screenshots here when supplied. Until then,
-// the existing project-specific artwork remains; no screenshots are invented.
-export const galleryScreenshots={rocket:null,lunar:null,tone:null,knowledge:null,docintel:null};
+// User-supplied project visuals, shared by wall posters and reading panels.
+// Rocket keeps its original artwork until its image is supplied.
+export const galleryScreenshots={rocket:null,lunar:'assets/projects/lunar-vision-interface.png',tone:'assets/projects/tone-analyser-interface.png',knowledge:'assets/projects/knowledge-vault-presentation.jpg',docintel:'assets/projects/docintel-ai-interface.png'};
 
 export function avoidGalleryPlinths(next,previous){
  for(const slot of galleryLayout){const x=slot.plinth[0],z=slot.plinth[2],half=.96,dx=next.x-x,dz=next.z-z;if(Math.abs(dx)>=half||Math.abs(dz)>=half)continue;

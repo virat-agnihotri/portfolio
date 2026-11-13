@@ -145,3 +145,10 @@ Tapping a sealed crate plays a short fuse tremble and a bounded burst using one 
 Effects run only inside the active Contact House. Leaving cancels an unfinished burst; already-revealed cards persist for the session. Reduced-motion mode reveals immediately. Collision handling keeps walking outside crate bases, and ray picking now ignores hidden objects and ancestors so exploded shells cannot block their revealed cards.
 
 `node contact-crates.test.mjs` checks account mapping, picking, collisions, burst completion, repeated opening, exit cancellation, cached reveals, reduced motion, and contact targets. Visual browser review remains pending; no local frontend server was started.
+## Project reading style and supplied visuals
+
+Project notes and the project index now use Lunar Minimal colors (`#F1F3F6` background, `#242B38` headings, `#596477` body, `#5951B8` accents) with Bold Showcase typography: Sora 800 headings and DM Sans body text. The style is scoped to the project-reading dialog; other house journals retain their existing design. Licensed variable font files are served locally from `dist/assets/fonts/`, downloaded from the Google Fonts source repository with their OFL notices.
+
+Four user-supplied images are now shared between the wall frames, project index thumbnails, and reading pages via `galleryScreenshots` in `gallery-layout.js`: Lunar Vision, Tone Analyser, Knowledge Vault AI, and DocIntel AI. Original files are copied unchanged into `dist/assets/projects/`. Poster image areas use contain sizing with larger space, so the full supplied composition remains visible. Reading-page images retain their natural aspect ratio. Rocket Simulator still uses its existing artwork and has no supplied screenshot configured.
+
+Content checks verify matching poster/reading-page paths, local file availability, and Rocket's pending image. Production build and regression checks passed without starting the frontend server; browser visual review remains pending.
