@@ -152,3 +152,6 @@ Project notes and the project index now use Lunar Minimal colors (`#F1F3F6` back
 Four user-supplied images are now shared between the wall frames, project index thumbnails, and reading pages via `galleryScreenshots` in `gallery-layout.js`: Lunar Vision, Tone Analyser, Knowledge Vault AI, and DocIntel AI. Original files are copied unchanged into `dist/assets/projects/`. Poster image areas use contain sizing with larger space, so the full supplied composition remains visible. Reading-page images retain their natural aspect ratio. Rocket Simulator still uses its existing artwork and has no supplied screenshot configured.
 
 Content checks verify matching poster/reading-page paths, local file availability, and Rocket's pending image. Production build and regression checks passed without starting the frontend server; browser visual review remains pending.
+## Wider indoor view and Gallery corners
+
+Indoor exploration uses a 78° vertical field of view on desktop and 84° on narrow/mobile screens. The street retains its existing 62°/67° view. Room entry, exit, home reset, and viewport resizing update the camera consistently. The Projects House now has four warm corner sconces with unshadowed point lights, active only while inside the Gallery, alongside its existing four exhibit spotlights.
