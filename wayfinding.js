@@ -7,7 +7,7 @@ export function addWayfinding(rooms,world){
  }
  for(const room of rooms){
   const side=Math.sign(room.x);label(`${room.number} / ${room.name.toUpperCase()}`,[side*6.14,3.86,room.z],6.7,.62,-side*Math.PI/2);
-  if(room.id==='gallery'||room.id==='about')continue; // Leave the exhibit walls unobstructed.
+  if(['gallery','about','contact'].includes(room.id))continue; // Leave the exhibit walls unobstructed.
   label(room.name.toUpperCase(),[room.cx,3.9,-12.23],8,.72);
   label(room.kind,[room.cx,3.22,-12.22],7,.43);
  }

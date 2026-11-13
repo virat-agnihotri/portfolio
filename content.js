@@ -47,6 +47,21 @@ export const projects=[
 ];
 const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const external=(url,label)=>`<a class="secondary-button" href="${escape(url)}" target="_blank" rel="noopener noreferrer">${escape(label)} ↗</a>`;
+export function contactAccounts(){return[
+ {id:'linkedin',label:'LinkedIn',value:'Virat Agnihotri',href:profile.linkedin,action:'Open LinkedIn'},
+ {id:'github',label:'GitHub',value:'virat-agnihotri',href:profile.github,action:'Open GitHub'},
+ {id:'twitter',label:'X / Twitter',value:'@ViratAgnihotrii',href:profile.twitter,action:'Open X / Twitter'},
+ {id:'instagram',label:'Instagram',value:'@virat_.a.g',href:profile.instagram,action:'Open Instagram'},
+ {id:'email',label:'Email',value:profile.email,href:'mailto:'+profile.email,action:'Write an email'},
+ {id:'phone',label:'Phone',value:profile.phone,href:'tel:'+profile.phone.replaceAll(' ',''),action:'Call Virat'},
+ {id:'message',label:'Message',value:'Write a little hello',href:null,action:'Compose a message'}
+];}
+export function contactCratePickerHTML(){return `<h3 class="content-heading">Reveal a TNT crate</h3><p class="detail-body">Choose a crate here, or tap one in the room. After the burst, your contact card appears.</p><div class="crate-picker">${contactAccounts().map(account=>`<button class="secondary-button" data-contact-crate="${account.id}"><span>TNT</span>${escape(account.label)}</button>`).join('')}</div>`;}
+export function contactAccountHTML(id){
+ if(id==='message')return contactHTML();const account=contactAccounts().find(item=>item.id===id);if(!account)return '';
+ const action=account.href?.startsWith('https:')?external(account.href,account.action):`<a class="dark-button" href="${escape(account.href)}">${escape(account.action)} ↗</a>`;
+ return `<div class="eyebrow">TNT / CONTACT UNLOCKED</div><h2>${escape(account.label)}</h2><div class="unlocked-contact"><span>UNSEALED & READY TO CONNECT</span><strong>${escape(account.value)}</strong></div><div class="detail-actions">${action}<button class="secondary-button" id="all-contacts">All contacts & message ↗</button></div><p class="note">Your account link opens when you select the button above.</p>`;
+}
 export const resumeLinks=()=>`<a class="dark-button" href="${profile.resume}" download="Virat-Agnihotri-Resume.pdf">Download résumé ↓</a><a class="secondary-button" href="${profile.resume}" target="_blank" rel="noopener">Open résumé ↗</a>`;
 export function galleryHTML(){return `<div class="eyebrow">01 / FIVE PROJECTS · SELECTED WORK</div><h2>Ideas, built<br>into tools.</h2><p class="detail-body">Scientific simulation, computer vision, speech analytics, and applied AI. Choose a project to stand in front of its exhibit. Tap its model to inspect, or its poster to read the project.</p><div class="project-list">${projects.map((p,i)=>`<button class="project-item" data-project="${i}"><span class="project-art" style="background:${p.color}">${p.symbol}</span><span><strong>${escape(p.title)}</strong><small>${p.category}</small></span><span>↗</span></button>`).join('')}</div>`;}
 export function projectHTML(index){const p=projects[index];if(!p)return '';return `<div class="eyebrow">FIELD NOTE / ${String(index+1).padStart(2,'0')} · ${p.category}</div><h2>${escape(p.title)}</h2><p class="detail-body">${escape(p.description)}</p>${p.image?`<figure class="project-figure"><img src="${p.image}" alt="${escape(p.caption)}" loading="lazy"><figcaption>${escape(p.caption)}</figcaption></figure>`:''}<h3 class="content-heading">The idea</h3><p class="detail-body">${escape(p.problem)}</p><ol class="project-flow" aria-label="Project workflow">${p.workflow.map(step=>`<li>${escape(step)}</li>`).join('')}</ol><h3 class="content-heading">Inside the build</h3><ul class="feature-list">${p.features.map(f=>`<li>${escape(f)}</li>`).join('')}</ul><div class="tags">${p.tags.map(t=>`<span>${escape(t)}</span>`).join('')}</div><p class="note">${escape(p.note)}</p><div class="detail-actions">${external(p.source||profile.github,p.source?'Project repository':'GitHub profile')}<button class="secondary-button" id="all-work">← All projects</button><button class="secondary-button" id="close-project">Back to the room</button></div>`;}

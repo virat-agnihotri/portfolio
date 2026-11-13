@@ -136,3 +136,12 @@ Offline checks cover door clearance, exhibit routes from corners and other displ
 19 local SVG assets come from [Devicon](https://github.com/devicons/devicon). Their license and source URLs are bundled in `dist/assets/technology-logos/`. Shared ecosystems reuse their relevant logo; skills without an included distinct logo use a named typography card rather than an invented brand symbol. The cards share one canvas texture atlas. SVG requests start on the first Skills House entry, and the loaded atlas stays cached during the session. The room group stays hidden outside that house.
 
 `node skills-exhibition.test.mjs` checks coverage of every skill, wall order, inward-facing frames, spacing, carpet clearance, and local logo/license availability. No frontend server was started; browser visual review remains pending.
+## TNT Contact House
+
+`contact-crates.js` builds seven labeled TNT crates for LinkedIn, GitHub, X/Twitter, Instagram, email, phone, and the message composer. Charcoal wall/ceiling finishes, red cases, fuse details, hazard pads, and a marked center aisle replace the former post-office furniture. No extra model downloads are required.
+
+Tapping a sealed crate plays a short fuse tremble and a bounded burst using one reusable pool of 28 particles, then replaces the shell with a contact card. A revealed card reopens directly on later clicks. Revealing does not open an external account automatically: the visitor selects the account link in the dialog. The Message crate opens the existing email-draft form. The All contacts dialog includes button alternatives for all seven crates and retains ordinary contact links.
+
+Effects run only inside the active Contact House. Leaving cancels an unfinished burst; already-revealed cards persist for the session. Reduced-motion mode reveals immediately. Collision handling keeps walking outside crate bases, and ray picking now ignores hidden objects and ancestors so exploded shells cannot block their revealed cards.
+
+`node contact-crates.test.mjs` checks account mapping, picking, collisions, burst completion, repeated opening, exit cancellation, cached reveals, reduced motion, and contact targets. Visual browser review remains pending; no local frontend server was started.
