@@ -3,11 +3,12 @@ import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js'
 import {createSkillsExhibition} from './skills-exhibition.js';
 import {createContactCrates} from './contact-crates.js';
 import {addPhotoFrame} from './photo-frames.js';
+import {createAboutHouse} from './about-house.js';
 
 function floorTexture(){const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');x.fillStyle='#887358';x.fillRect(0,0,512,512);for(let col=0;col<8;col++)for(let row=-1;row<3;row++){const y=row*256+(col%2)*128;x.fillStyle=['#998466','#8e795d','#a18c6f','#938064'][(col+row+4)%4];x.fillRect(col*64+1,y+1,62,254);x.strokeStyle='#b4a18455';for(let i=0;i<7;i++){x.beginPath();x.moveTo(col*64+7+i*7,y);x.bezierCurveTo(col*64+10+i*7,y+80,col*64+2+i*7,y+160,col*64+8+i*7,y+254);x.stroke();}}const map=new THREE.CanvasTexture(c);map.colorSpace=THREE.SRGBColorSpace;map.wrapS=map.wrapT=THREE.RepeatWrapping;map.repeat.set(3,4);return map;}
 
 export function createRoomDecor(rooms,world,{textures=true,reduced=false,onContactReveal=()=>{}}={}){
- let skillsExhibition,contactCrates;const groups=new Map(),woodMap=textures?floorTexture():null;
+ let skillsExhibition,contactCrates,aboutHouse;const groups=new Map(),woodMap=textures?floorTexture():null;
  const mat=color=>new THREE.MeshStandardMaterial({color,roughness:.9});const wood=new THREE.MeshStandardMaterial({color:'#8e7354',map:woodMap,roughness:.8}),brass=new THREE.MeshStandardMaterial({color:'#b49a6a',metalness:.4,roughness:.5}),dark=mat('#37483f');
  for(const room of rooms){const group=new THREE.Group();group.name=room.id+' fitted interior';group.position.set(room.cx,0,-5);group.visible=false;world.add(group);groups.set(room.id,group);
   const palette={gallery:{wall:'#48534d',accent:'#5b665c',fabric:'#817965'},about:{wall:'#293c55',accent:'#1a2b40',fabric:'#a5b6c7'},studio:{wall:'#d5bca8',accent:'#80595b',fabric:'#dfc7aa'},contact:{wall:'#24444b',accent:'#142e35',fabric:'#9f6150'}}[room.id];
@@ -23,7 +24,7 @@ export function createRoomDecor(rooms,world,{textures=true,reduced=false,onConta
   if(room.id!=='gallery'){
    const ceilingColor={about:'#ccd4dd',studio:'#eee1cf',contact:'#182f36'}[room.id];box([12.6,.025,14.7],[0,4.76,0],mat(ceilingColor));
    for(const side of [-1,1])box([5.3,4.5,.035],[side*3.65,2.5,7.28],wall);box([2,1.7,.035],[0,3.95,7.28],wall);
-   for(const [side,name] of [[-1,'left'],[1,'right']])addPhotoFrame(group,room.id+'-'+name,{position:[side*2.6,2.65,7.15],rotation:Math.PI,width:1.8,height:2.05,color:room.id==='contact'?'#b98565':'#ac8b59'});
+   for(const [side,name] of [[-1,'left'],[1,'right']])addPhotoFrame(group,room.id+'-'+name,{position:[side*2.6,2.65,7.15],rotation:Math.PI,width:1.18,height:1.42,color:room.id==='contact'?'#b98565':'#ac8b59'});
    for(const side of [-1,1])box([.055,.045,13.7],[side*6.16,4.43,0],new THREE.MeshBasicMaterial({color:room.id==='studio'?'#ffe1b1':'#d9e6e7'}));
   }
   if(room.id==='gallery'){
@@ -37,11 +38,11 @@ export function createRoomDecor(rooms,world,{textures=true,reduced=false,onConta
    chair(4.55,.5,-Math.PI/2,2.8);chair(-4.55,.3,Math.PI/2,1.8);
    box([1.5,.13,1.2],[2.3,.54,.6],wood,true);for(const x of [1.73,2.87])for(const z of [.17,1.03])box([.075,.47,.075],[x,.28,z],roomTrim);
    for(let i=0;i<3;i++)box([.63,.055,.42],[2.3,.65+i*.06,.6],i%2?accent:mat('#eee1cd'));
-   box([3.6,.14,.85],[0,1,-5.6],wood,true);for(const x of [-1.5,1.5])box([.12,.88,.65],[x,.5,-5.6],roomTrim);
+   aboutHouse=createAboutHouse(group,{textures});
    for(const side of [-1,1])for(let i=0;i<8;i++)box([.065,1.02,.045],[side*6.17,.77,-6+i*1.75],wood);
   }else{
    contactCrates=createContactCrates(group,{textures,reduced,onReveal:onContactReveal});
   }
  }
- return{groups,contactCrates,update(dt){contactCrates?.update(dt);},setActive(id){groups.forEach((group,key)=>group.visible=key===id);if(id==='about')skillsExhibition?.activate();contactCrates?.setActive(id==='contact');}};
+ return{groups,contactCrates,aboutHouse,update(dt){contactCrates?.update(dt);},setActive(id){groups.forEach((group,key)=>group.visible=key===id);if(id==='about')skillsExhibition?.activate();contactCrates?.setActive(id==='contact');}};
 }

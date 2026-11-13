@@ -63,7 +63,8 @@ def building(key,title,subtitle,x,y,rotation,color='cream',floors=2):
     w=8;d=5;h={'gallery':7.5,'about':8.4,'studio':6.9,'contact':8,'cafe':4.7,'bookshop':7.8}.get(key,6.8)
     box(key+'_body',(0,0,h/2),(w,d,h),color,root)
     # Foundation, cornices, outlined facade bands.
-    box('foundation',(0,-.04,.3),(w+.2,d+.15,.6),'stone',root)
+    foundation_height=.14 if key in ['gallery','about','studio','contact'] else .6
+    box('foundation',(0,-.04,foundation_height/2),(w+.2,d+.15,foundation_height),'stone',root)
     for z in [3.5,h-.12]:box('cornice',(0,0,z),(w+.3,d+.3,.18),'paper',root)
     box('roof',(0,0,h+.18),(w+.6,d+.6,.34),'roof',root)
     box('parapet_front',(0,-d/2,h+.5),(w+.4,.15,.6),color,root)
@@ -97,7 +98,7 @@ def building(key,title,subtitle,x,y,rotation,color='cream',floors=2):
     box('door_'+key,(0,-2.7,1.4),(1.22,.11,2.55),'ink',root)
     box('door_glass',(0,-2.77,1.82),(.91,.04,1.3),'glass',root)
     ball('brass_handle',(.39,-2.85,1.15),(.06,.06,.06),'yellow',root)
-    box('door_step',(0,-2.95,.14),(1.8,.7,.22),'paper',root)
+    box('door_step',(0,-2.95,.1),(1.8,.7,.08),'paper',root)
     for xx in [-2.5,2.5]:
         box('display_frame',(xx,-2.57,1.5),(2.35,.19,2.05),'paper',root)
         box('display_glass',(xx,-2.69,1.5),(2.12,.08,1.81),'glass',root)

@@ -10,14 +10,14 @@ const bytes=await readFile(new URL('./dist/assets/neighborhood.glb',import.meta.
 const gltf=await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');
 gltf.scene.updateMatrixWorld(true);
 const world=new THREE.Group(),doors=createEntrances(rooms,world);
-gltf.scene.traverse(object=>{if(!object.isMesh)return;const geometry=object.geometry.clone().applyMatrix4(object.matrixWorld);doors.extract(object,geometry,object.material);});
+const removedFoundations=[];gltf.scene.traverse(object=>{if(!object.isMesh)return;const geometry=object.geometry.clone().applyMatrix4(object.matrixWorld);const consumed=doors.extract(object,geometry,object.material);if(object.name.startsWith('foundation')&&rooms.some(room=>room.id===object.parent?.name)){assert.equal(consumed,true,'The original solid foundation must be excluded from the static batch');removedFoundations.push(object.name);}});assert.equal(removedFoundations.length,4);
 for(const [id,entry] of doors.entries){assert.ok(entry.material,`${id}: facade must be removed for a real opening`);assert.equal(entry.hinge.children.filter(o=>o.isMesh).length,3,`${id}: panel, glass and handle must all move with hinge`);entry.hinge.rotation.y=1.45;}
 doors.finish();doors.reset();for(const entry of doors.entries.values())assert.equal(entry.hinge.rotation.y,0);
 for(const entry of doors.entries.values()){
  for(const angle of [0,.4,.9,entry.room.id==='gallery'?1.45:1.58]){
   entry.hinge.rotation.y=angle;world.updateMatrixWorld(true);
   const panel=entry.hinge.children.find(o=>o.isMesh),bounds=new THREE.Box3().setFromObject(panel);
-  assert.ok(bounds.min.y>.28,'Door clears the 25cm front step throughout its swing');
+  assert.ok(bounds.min.y>.17,'Door clears the lowered 14cm threshold throughout its swing');
   assert.ok(bounds.max.y<2.675,'Door fits beneath the lintel');
  }
 }
@@ -39,3 +39,13 @@ for(let t=0;t<4;t+=.01){const p=entrancePose(t);assert.ok(p.door>=0&&p.door<=1);
 console.log('Passed: all four door assemblies, center-road ray targets, isolated hover/reset, center-road camera turns, and entrance timing.');
 
 const entryPhotoSlots=[];world.traverse(object=>{if(object.userData.photoSlot)entryPhotoSlots.push(object.userData.photoSlot);});assert.deepEqual(entryPhotoSlots.sort(),['about-entry','contact-entry','studio-entry']);
+
+for(const room of rooms){
+ const floor=world.getObjectByName(room.id+' doorway floor'),threshold=world.getObjectByName(room.id+' threshold');
+ assert.ok(floor&&threshold);world.updateMatrixWorld(true);
+ for(const object of [floor,threshold])assert.ok(new THREE.Box3().setFromObject(object).max.y<=.141,'Doorway floor and threshold are lowered');
+ const entry=doors.entries.get(room.id);entry.hinge.rotation.y=1.58;world.updateMatrixWorld(true);
+ const ray=new THREE.Raycaster(new THREE.Vector3(Math.sign(room.x)*6.45,.25,room.z),new THREE.Vector3(Math.sign(room.x),0,0),0,3.8);
+ assert.equal(ray.intersectObject(world,true).length,0,'No solid foundation blocks the open doorway at ankle height');
+}
+doors.reset();
