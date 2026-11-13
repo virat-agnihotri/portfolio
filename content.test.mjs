@@ -16,3 +16,5 @@ const resume=await readFile(new URL('./dist/'+profile.resume,import.meta.url));a
 assert.equal(createHash('sha256').update(resume).digest('hex'),'b96fb9897e4ceee173196b18281683046411e5e994b25f0e7ec074c60cc0a90f','Original résumé preserved');
 const app=await readFile(new URL('./src.js',import.meta.url),'utf8');assert.ok(app.includes('createGalleryExhibits(world,projects'));assert.ok(!app.includes('Personal biography placeholder'));
 console.log('Passed: five real project entries, contact and education content, presentation assets, source links, and unchanged résumé download.');
+
+assert.ok(contactHTML().includes('https://www.instagram.com/virat_.a.g/'));assert.ok(contactHTML().includes('https://x.com/ViratAgnihotrii'));assert.ok(contactHTML().includes('id="contact-form"'));assert.ok(aboutHTML().includes('IIIT Delhi'));assert.ok(aboutHTML().includes('Adobe Hackathon'));assert.ok(aboutHTML().includes('What I’m working toward'));

@@ -13,17 +13,20 @@ import { createInteriors } from './interiors.js';
 import { ModelInspector } from './model-inspector.js';
 import { createGalleryRoom } from './gallery-room.js';
 import { createRoomDecor } from './room-decor.js';
+import { exhibitView, exhibitRoute, advanceExhibitTravel } from './gallery-navigation.js';
+import { addWayfinding } from './wayfinding.js';
 
 const rooms=[
- {id:'gallery',name:'The Gallery',kind:'PROJECTS & SELECTED WORK',number:'01',x:6.25,z:-4,cx:60,title:'A few things<br>I made.',description:'Five projects in scientific simulation, computer vision, and applied AI. Select a frame to explore the build.',action:'Discover the work ↗'},
- {id:'about',name:'The Explorer',kind:'THE PERSON BEHIND THE WORK',number:'02',x:-6.25,z:-17,cx:82,title:'Curiosity<br>lives here.',description:'Meet Virat Agnihotri: Computer Science undergraduate, full-stack builder, and applied AI explorer.',action:'Open the journal ↗'},
- {id:'studio',name:'The Workshop',kind:'TOOLS, SKILLS & EXPERIMENTS',number:'03',x:6.25,z:-26,cx:104,title:'Always in<br>the making.',description:'Python, React, FastAPI, computer vision, retrieval, and scientific computing. Explore the tools behind my projects.',action:'Look around the desk ↗'},
- {id:'contact',name:'The Post Office',kind:'LET’S MAKE SOMETHING',number:'04',x:-6.25,z:-39,cx:126,title:'The next<br>chapter.',description:'A project, a collaboration, or a technical conversation. Find my email, GitHub, LinkedIn, and résumé here.',action:'Write a little hello ↗'}
+ {id:'gallery',name:'The Projects House',kind:'PROJECTS & SELECTED WORK',number:'01',x:6.25,z:-4,cx:60,title:'A few things<br>I made.',description:'Five projects in scientific simulation, computer vision, and applied AI. Select a frame to explore the build.',action:'Discover the work ↗'},
+ {id:'about',name:'The Skills House',kind:'TOOLS & SKILLS',number:'02',x:-6.25,z:-17,cx:82,title:'The tools<br>behind the ideas.',description:'Languages, frameworks, AI, and engineering skills.',action:'Explore my skills ↗'},
+ {id:'studio',name:'The About House',kind:'MY STORY & RÉSUMÉ',number:'03',x:6.25,z:-26,cx:104,title:'A little<br>about me.',description:'My story, approach, education, and résumé.',action:'Open my journal ↗'},
+ {id:'contact',name:'The Contact House',kind:'LET’S MAKE SOMETHING',number:'04',x:-6.25,z:-39,cx:126,title:'The next<br>chapter.',description:'A project, a collaboration, or a technical conversation. Find my email, GitHub, LinkedIn, and résumé here.',action:'Write a little hello ↗'}
 ];
 const $=s=>document.querySelector(s);
 let scene,camera,renderer,world,atmosphere,entrances,interiors,galleryExhibits,galleryRoom,roomDecor,inspection,entrance=null,started=false,currentRoom=null,nearRoom=null,auto=false,transition=false,ready=false;
 let yaw=0,pitch=0,drag=false,pointerDistance=0,lastPointer={x:0,y:0},position=new THREE.Vector3(0,1.75,16),returnPosition=position.clone(),returnYaw=0;
 let keys=new Set(),visited=new Set(),time=0,lastTime=performance.now(),audio=null,toastTimer;
+let exhibitTravel=null,nearestExhibit=null;
 let glance=0,lastManualLook=-10,hoveredDoor=null,pressedDoor=null,pointerKnown=false;
 const walkVelocity=new THREE.Vector2(),nextPosition=new THREE.Vector3();let hoverClock=0;
 try{visited=new Set(JSON.parse(localStorage.getItem('little-quarter-places')||'[]').filter(id=>rooms.some(r=>r.id===id)));}catch{}
@@ -85,11 +88,23 @@ $('#inspect-project').onclick=()=>{const index=inspection.index;inspection.close
 
 function openRoomDetails(room){
  if(!room)return;stopWalking();
- const render={gallery:galleryHTML,about:aboutHTML,studio:skillsHTML,contact:contactHTML};
+ const render={gallery:galleryHTML,about:skillsHTML,studio:aboutHTML,contact:contactHTML};
  $('#detail-content').innerHTML=render[room.id]();
- document.querySelectorAll('[data-project]').forEach(button=>button.onclick=()=>openProject(Number(button.dataset.project)));
+ document.querySelectorAll('[data-project]').forEach(button=>button.onclick=()=>{const index=Number(button.dataset.project);if(currentRoom?.id==='gallery')goToExhibit(index);else openProject(index);});
+ const form=$('#contact-form');if(form)form.onsubmit=event=>{event.preventDefault();const data=new FormData(form);const subject=String(data.get('subject')||'Portfolio enquiry');const body=`From: ${data.get('name')} <${data.get('email')}>\n\n${data.get('message')}`;location.href=`mailto:${profile.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;};
  const back=$('#contact-back');if(back)back.onclick=()=>details.close();
  if(!details.open)details.showModal();
+}
+function goToExhibit(index){
+ const exhibit=galleryExhibits?.get(index);if(!exhibit||currentRoom?.id!=='gallery'||inspection?.busy)return;
+ const view=exhibitView(exhibit.slot);let route;try{route=exhibitRoute(position,view.position);}catch{toast('Step away from the stand and try again.');return;}closeDialogs();stopWalking();exhibitTravel={from:position.clone(),fromYaw:yaw,fromPitch:pitch,view,route,elapsed:0};transition=true;$('#exhibit-actions').hidden=true;
+}
+$('#exhibit-inspect').onclick=()=>{if(nearestExhibit!==null)startInspection(nearestExhibit);};
+$('#exhibit-read').onclick=()=>{if(nearestExhibit!==null)openProject(nearestExhibit);};
+function updateExhibitActions(){
+ const active=currentRoom?.id==='gallery'&&!transition&&!inspection?.busy&&!modals();$('#exhibit-actions').hidden=!active;if(!active)return;
+ let distance=Infinity;nearestExhibit=null;projects.forEach((project,index)=>{const exhibit=galleryExhibits.get(index);if(!exhibit)return;const d=Math.hypot(position.x-exhibit.slot.plinth[0],position.z-exhibit.slot.plinth[2]);if(d<distance){distance=d;nearestExhibit=index;}});
+ const exhibit=galleryExhibits.get(nearestExhibit);$('#exhibit-name').textContent=projects[nearestExhibit].shortTitle;const loaded=exhibit.jobs.some(job=>job.state==='loaded');$('#exhibit-inspect').disabled=!loaded;$('#exhibit-inspect').textContent=loaded?'Inspect model ↔':'Model loading…';
 }
 function openProject(index){
  if(!projects[index])return;stopWalking();$('#detail-content').innerHTML=projectHTML(index);
@@ -114,8 +129,8 @@ try{
  new GLTFLoader().load('assets/neighborhood.glb',gltf=>{
    // Batch the static Blender meshes by material to avoid thousands of draw
    // calls. Keep the six gallery targets separate for ray picking.
-   gltf.scene.updateMatrixWorld(true);world=new THREE.Group();entrances=createEntrances(rooms,world);interiors=createInteriors(rooms,world,scene);galleryRoom=createGalleryRoom(world,scene);roomDecor=createRoomDecor(rooms,world);const batches=new Map(),edgeParts=[],styled=new Set();
-   gltf.scene.traverse(o=>{if(!o.isMesh||/^project_(frame|art|label)_?/.test(o.name)||/^(display_pedestal|exhibit|gallery_viewing_bench|gallery_bench_leg|gallery_picture_light|about_armchair|about_armrest|about_reading_rug)/.test(o.name))return;const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(o.matrixWorld);for(const attr of Object.keys(g.attributes))if(!['position','normal'].includes(attr))g.deleteAttribute(attr);if(!g.attributes.normal)g.computeVertexNormals();
+   gltf.scene.updateMatrixWorld(true);world=new THREE.Group();entrances=createEntrances(rooms,world);interiors=createInteriors(rooms,world,scene);galleryRoom=createGalleryRoom(world,scene);roomDecor=createRoomDecor(rooms,world);addWayfinding(rooms,world);const batches=new Map(),edgeParts=[],styled=new Set();
+   gltf.scene.traverse(o=>{if(!o.isMesh||/^sign_(gallery|about|studio|contact)$/.test(o.name)||/^(room_title|room_subtitle)/.test(o.name)||(/^board_label/.test(o.name)&&rooms.some(r=>r.id===o.parent?.name))||/^project_(frame|art|label)_?/.test(o.name)||/^(display_pedestal|exhibit|gallery_viewing_bench|gallery_bench_leg|gallery_picture_light|about_armchair|about_armrest|about_reading_rug)/.test(o.name))return;const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(o.matrixWorld);/* Set the decorative café back so Projects is the first street entrance. */if(o.parent?.name==='cafe')g.translate(-14,0,0);for(const attr of Object.keys(g.attributes))if(!['position','normal'].includes(attr))g.deleteAttribute(attr);if(!g.attributes.normal)g.computeVertexNormals();
    worldUV(g,o.material);if(!styled.has(o.material.uuid)){styleMaterial(o.material);styled.add(o.material.uuid);}
    if(interiors.extract(o,g,o.material)||entrances.extract(o,g,o.material))return;
    const n=o.name.toLowerCase();if(!n.includes('foliage')&&!n.includes('plant')&&!n.includes('sign_')&&!n.includes('label')&&!n.includes('text')&&!n.includes('seam')&&!n.includes('joint')&&!n.includes('wire')&&!n.includes('bulb')&&g.attributes.position.count<5000)edgeParts.push(new THREE.EdgesGeometry(g,35));
@@ -135,12 +150,13 @@ canvas.addEventListener('pointerup',e=>{if(!drag)return;drag=false;if(inspection
 addEventListener('keydown',e=>{const key=e.key.toLowerCase();if(inspection?.busy){if(key==='escape'){e.preventDefault();inspection.close();}return;}if(e.repeat&&['m','e','escape'].includes(key))return;if(modals()||transition||e.ctrlKey||e.metaKey||e.altKey)return;if(key==='m'){e.preventDefault();openMap();return;}if(key==='escape'&&currentRoom){leaveRoom();return;}if(key==='e'&&(hoveredDoor||nearRoom)&&!currentRoom){enterRoom(rooms.find(r=>r.id===hoveredDoor)||nearRoom);return;}if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(key)){e.preventDefault();if(!started)begin();keys.add(key);auto=false;updateTour();}});
 addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));addEventListener('blur',()=>{stopWalking();pointerKnown=false;});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){stopWalking();audio?.suspend();}else{lastTime=performance.now();audio?.resume().catch(()=>{});}});
-document.querySelectorAll('[data-move]').forEach(b=>{const k={forward:'w',backward:'s',left:'a',right:'d'}[b.dataset.move];b.onpointerdown=e=>{e.preventDefault();if(transition)return;b.setPointerCapture(e.pointerId);begin();keys.add(k);auto=false;updateTour();};b.onpointerup=b.onpointercancel=()=>keys.delete(k);});
+document.querySelectorAll('[data-move]').forEach(b=>{const k={forward:'w',backward:'s',left:'a',right:'d'}[b.dataset.move];b.onpointerdown=e=>{e.preventDefault();if(transition||modals()||inspection?.busy)return;b.setPointerCapture(e.pointerId);begin();keys.add(k);auto=false;updateTour();};b.onpointerup=b.onpointercancel=b.onlostpointercapture=()=>keys.delete(k);});
 let scrollImpulse=0;addEventListener('wheel',e=>{if(inspection?.active){e.preventDefault();inspection.zoom(e.deltaY);return;}if(modals()||!ready||transition||inspection?.busy)return;e.preventDefault();begin();auto=false;updateTour();scrollImpulse=THREE.MathUtils.clamp(scrollImpulse+e.deltaY*.012,-9,9);},{passive:false});
 $('#interaction').onclick=()=>{if(nearRoom)enterRoom(nearRoom);};
 function collide(next,previous){if(currentRoom){next.x=THREE.MathUtils.clamp(next.x,currentRoom.cx-5.8,currentRoom.cx+5.8);next.z=THREE.MathUtils.clamp(next.z,-11.1,1.5);if(currentRoom.id==='gallery')avoidGalleryPlinths(next,previous);}else{next.x=THREE.MathUtils.clamp(next.x,-4.65,4.65);next.z=THREE.MathUtils.clamp(next.z,-60,17);const dx=next.x,dz=next.z+55,d=Math.hypot(dx,dz);if(d<2.85){if(d>.01){next.x=dx/d*2.85;next.z=-55+dz/d*2.85;}else next.copy(previous);}}return next;}
 function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-lastTime)/1000,.05);lastTime=now;time+=dt;
  updateEntrance(dt);
+ if(exhibitTravel){const pose=advanceExhibitTravel(exhibitTravel,dt,reduced);position.copy(pose.position);yaw=pose.yaw;pitch=pose.pitch;if(pose.done){exhibitTravel=null;transition=false;lastManualLook=time;}}
  if(started&&!transition&&!modals()&&!inspection?.busy){
    let forward=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0),side=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0);
    if(auto&&!currentRoom){forward=.6;yaw=THREE.MathUtils.damp(yaw,0,4,dt);if(position.z<-47){auto=false;updateTour();toast('You’ve reached the square. Open the map to step inside a building.');}}
@@ -151,7 +167,7 @@ function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-lastTime
  const shop=started&&!currentRoom&&!transition&&!modals()?nearbyShop(rooms,position):null;
  const desiredGlance=!reduced&&time-lastManualLook>3?shopGlance(shop,position,yaw):0;
  glance=THREE.MathUtils.damp(glance,desiredGlance,3,dt);if(transition||currentRoom)glance=0;
- if(inspection?.busy)inspection.update(dt);else camera.rotation.set(pitch,yaw+glance,0);camera.updateMatrixWorld();galleryRoom?.update(currentRoom?.id==='gallery',camera.position);galleryExhibits?.update(dt,currentRoom?.id==='gallery',position,inspection?.paused||false);hoverClock+=dt;if(hoverClock>.05){updateDoorHover();hoverClock=0;}atmosphere.update(time);renderer.render(scene,camera);
+ if(inspection?.busy)inspection.update(dt);else camera.rotation.set(pitch,yaw+glance,0);camera.updateMatrixWorld();galleryRoom?.update(currentRoom?.id==='gallery',camera.position);galleryExhibits?.update(dt,currentRoom?.id==='gallery',position,inspection?.paused||false);hoverClock+=dt;if(hoverClock>.05){updateDoorHover();hoverClock=0;}atmosphere.update(time);updateExhibitActions();renderer.render(scene,camera);
  if(!currentRoom&&!transition){nearRoom=shop;$('#location').textContent=!started?'The south entrance':position.z>-3?'Café corner':position.z>-12?'Gallery lane':position.z>-23?'Explorer’s row':position.z>-34?'The makers’ district':position.z>-47?'Post office lane':'The fountain square';}
  const interaction=$('#interaction');interaction.hidden=!shop;if(shop){interaction.classList.toggle('shop-left',shop.x<0);interaction.classList.toggle('shop-right',shop.x>0);interaction.classList.toggle('door-hovered',hoveredDoor===shop.id);interaction.setAttribute('aria-label','Enter '+shop.name);if(interaction.dataset.room!==shop.id){interaction.dataset.room=shop.id;interaction.innerHTML=`<span class="shop-caption">${shop.x<0?'← ON YOUR LEFT':'ON YOUR RIGHT →'}</span><strong>${shop.name}</strong><small>E · Step inside ↗</small>`;}interaction.querySelector('small').textContent=hoveredDoor===shop.id?'Click the door to enter ↗':'E · Step inside ↗';}
 }

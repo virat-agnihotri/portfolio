@@ -12,7 +12,8 @@ export function createEntrances(rooms,world){
   if(name===entry.room.id+'_body'){entry.material=material;geometry.dispose();return true;}
   if(name.startsWith('door_frame')){entry.frameMaterial=material;geometry.dispose();return true;}
   if(name==='door_'+entry.room.id||name.startsWith('door_glass')||name.startsWith('brass_handle')){
-   geometry.translate(-entry.hinge.position.x,0,-entry.hinge.position.z);const leaf=new THREE.Mesh(geometry,material.clone());leaf.userData.roomId=entry.room.id;leaf.userData.baseEmissive=leaf.material.emissive.clone();leaf.userData.baseEmissiveIntensity=leaf.material.emissiveIntensity;leaf.castShadow=true;leaf.receiveShadow=true;entry.hinge.add(leaf);const outline=new THREE.LineSegments(new THREE.EdgesGeometry(geometry,35),new THREE.LineBasicMaterial({color:'#344335',transparent:true,opacity:.3}));outline.raycast=()=>{};entry.hinge.add(outline);return true;
+   // Keep the whole leaf above the 25cm step and below the lintel.
+   geometry.scale(1,.92,1);geometry.translate(-entry.hinge.position.x,.19,-entry.hinge.position.z);const leaf=new THREE.Mesh(geometry,material.clone());leaf.userData.roomId=entry.room.id;leaf.userData.baseEmissive=leaf.material.emissive.clone();leaf.userData.baseEmissiveIntensity=leaf.material.emissiveIntensity;leaf.castShadow=true;leaf.receiveShadow=true;entry.hinge.add(leaf);const outline=new THREE.LineSegments(new THREE.EdgesGeometry(geometry,35),new THREE.LineBasicMaterial({color:'#344335',transparent:true,opacity:.3}));outline.raycast=()=>{};entry.hinge.add(outline);return true;
   }return false;
  }
  function finish(){for(const {room,side,material,frameMaterial} of entries.values()){

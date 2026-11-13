@@ -13,6 +13,15 @@ const world=new THREE.Group(),doors=createEntrances(rooms,world);
 gltf.scene.traverse(object=>{if(!object.isMesh)return;const geometry=object.geometry.clone().applyMatrix4(object.matrixWorld);doors.extract(object,geometry,object.material);});
 for(const [id,entry] of doors.entries){assert.ok(entry.material,`${id}: facade must be removed for a real opening`);assert.equal(entry.hinge.children.filter(o=>o.isMesh).length,3,`${id}: panel, glass and handle must all move with hinge`);entry.hinge.rotation.y=1.45;}
 doors.finish();doors.reset();for(const entry of doors.entries.values())assert.equal(entry.hinge.rotation.y,0);
+for(const entry of doors.entries.values()){
+ for(const angle of [0,.4,.9,1.45]){
+  entry.hinge.rotation.y=angle;world.updateMatrixWorld(true);
+  const panel=entry.hinge.children.find(o=>o.isMesh),bounds=new THREE.Box3().setFromObject(panel);
+  assert.ok(bounds.min.y>.28,'Door clears the 25cm front step throughout its swing');
+  assert.ok(bounds.max.y<2.675,'Door fits beneath the lintel');
+ }
+}
+doors.reset();
 world.updateMatrixWorld(true);
 for(const room of rooms){
  const ray=new THREE.Raycaster(new THREE.Vector3(0,1.7,room.z),new THREE.Vector3(Math.sign(room.x),0,0),0,18);

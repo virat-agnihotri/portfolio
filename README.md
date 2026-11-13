@@ -118,3 +118,14 @@ Entering the Gallery queues all seven model assets with at most two requests in 
 `room-decor.js` adds room-specific fitted finishes, warm plank floors, diffused window panels, softer seating, and reading/writing areas. Dynamic decor is visible only in the active room. The architectural Blender shell remains intact underneath these presentation layers.
 
 `node gallery-lifecycle.test.mjs` verifies entry-only loading, bounded concurrency, all-model queueing, animation pause on exit, cache reuse, and active-room-only decor. Browser visual QA is deferred until a deployed URL or an authorized local preview is available.
+## House order, mobile controls, and guided exhibits
+
+Street houses are numbered Projects, Skills, About, and Contact. Internal Blender IDs remain unchanged; `src.js` maps the second physical house to skills and the third to biography. `wayfinding.js` replaces the old facade/interior wording. The decorative café is set back from the road so the Projects House is the first main-street entrance.
+
+Door geometry now clears the 25cm step through its full swing and fits beneath the lintel. Mobile movement controls remain available indoors, with separate space for the room journal and exhibit actions. Pointer cancellation and lost capture release held movement.
+
+The Gallery shows explicit Inspect model / Read project buttons for the closest stand, with loading feedback. Journal selections guide the camera to a viewing spot in front of the selected project. `gallery-navigation.js` routes around the five plinths using a small visibility graph; reduced-motion visitors move directly to the destination. Posters still open project notes, while models and plinths open inspection.
+
+The About journal includes supplied hackathon names and editable draft thoughts/aims in `content.js`. Contact links include Instagram and X. The validated contact form opens an email draft with encoded subject and body; it does not send mail from the server or claim a message has been delivered.
+
+Offline checks cover door clearance, exhibit routes from corners and other displays, view direction, reduced motion, content links, and the existing room/model lifecycle. Browser visual review remains pending; the local frontend server was not started.
