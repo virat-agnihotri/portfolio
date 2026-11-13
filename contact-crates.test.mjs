@@ -1,3 +1,5 @@
+import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {contactAccounts,contactAccountHTML,contactCratePickerHTML} from './content.js';
@@ -26,3 +28,9 @@ for(const slot of contactCrateLayout){
 }
 assert.equal((contactCratePickerHTML().match(/data-contact-crate=/g)||[]).length,7,'All crates have keyboard/touch button alternatives');
 console.log('Passed: seven contact crates, burst lifecycle, cached reveals, exit cancellation, reduced motion, picking, collisions, and account links.');
+
+const app=readFileSync(new URL('./src.js',import.meta.url),'utf8'),revealCode=app.match(/function openContactAccount\(id\)\{[\s\S]*?\n\}/)[0];
+const nodes=new Map();const $=selector=>{if(!nodes.has(selector))nodes.set(selector,{hidden:true,removeAttribute(){}});return nodes.get(selector);};
+runInNewContext(revealCode+";openContactAccount('github');",{$,contactAccounts,currentRoom:{id:'contact'},transition:false});
+assert.equal($('#contact-reveal').hidden,false);assert.equal($('#contact-reveal-link').href,'https://github.com/virat-agnihotri');assert.equal($('#contact-reveal-name').textContent,'GitHub');
+assert.ok(!/showModal|openRoomDetails/.test(revealCode),'A contact reveal must not open a popup or message form automatically');

@@ -14,7 +14,7 @@ gltf.scene.traverse(object=>{if(!object.isMesh)return;const geometry=object.geom
 for(const [id,entry] of doors.entries){assert.ok(entry.material,`${id}: facade must be removed for a real opening`);assert.equal(entry.hinge.children.filter(o=>o.isMesh).length,3,`${id}: panel, glass and handle must all move with hinge`);entry.hinge.rotation.y=1.45;}
 doors.finish();doors.reset();for(const entry of doors.entries.values())assert.equal(entry.hinge.rotation.y,0);
 for(const entry of doors.entries.values()){
- for(const angle of [0,.4,.9,1.45]){
+ for(const angle of [0,.4,.9,entry.room.id==='gallery'?1.45:1.58]){
   entry.hinge.rotation.y=angle;world.updateMatrixWorld(true);
   const panel=entry.hinge.children.find(o=>o.isMesh),bounds=new THREE.Box3().setFromObject(panel);
   assert.ok(bounds.min.y>.28,'Door clears the 25cm front step throughout its swing');
@@ -37,3 +37,5 @@ assert.equal(nearbyShop(rooms,new THREE.Vector3(0,1.75,16)),null,'No shop captio
 assert.equal(entrancePose(0).stage,'approach');assert.equal(entrancePose(1.8).stage,'open');assert.equal(entrancePose(2.8).stage,'walk');assert.equal(entrancePose(3.7).stage,'fade');assert.equal(entrancePose(4).stage,'complete');
 for(let t=0;t<4;t+=.01){const p=entrancePose(t);assert.ok(p.door>=0&&p.door<=1);assert.ok(p.opacity>=0&&p.opacity<=1);}
 console.log('Passed: all four door assemblies, center-road ray targets, isolated hover/reset, center-road camera turns, and entrance timing.');
+
+const entryPhotoSlots=[];world.traverse(object=>{if(object.userData.photoSlot)entryPhotoSlots.push(object.userData.photoSlot);});assert.deepEqual(entryPhotoSlots.sort(),['about-entry','contact-entry','studio-entry']);

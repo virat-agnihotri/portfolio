@@ -155,3 +155,12 @@ Content checks verify matching poster/reading-page paths, local file availabilit
 ## Wider indoor view and Gallery corners
 
 Indoor exploration uses a 78° vertical field of view on desktop and 84° on narrow/mobile screens. The street retains its existing 62°/67° view. Room entry, exit, home reset, and viewport resizing update the camera consistently. The Projects House now has four warm corner sconces with unshadowed point lights, active only while inside the Gallery, alongside its existing four exhibit spotlights.
+## Distinct journals, non-modal contacts, and future photo frames
+
+The three non-project houses have separate finishes: Skills uses navy/blue paneling with brass trim and its existing red carpet exhibition; About uses terracotta, wine-colored lower walls, warm wood, a reading lounge, and a small writing console; Contact uses petrol-blue walls, copper trim, and subdued oxblood crates. Their ceilings, entrance walls, and trim now match those palettes. Old About-house workshop tables and monitor props are filtered from the exported scene. The Projects House's presentation and entrance timing remain unchanged.
+
+Contact reveals now populate a small dismissible in-page card instead of calling a dialog. Walking continues while it is visible. Social/email/phone links remain explicit actions; the Message card's button opens the existing composer only on request. The burst uses sixteen thin fragments and eight soft dust sprites, without the former expanding ring or rotating cube confetti. Revealed world cards persist across visits, and unfinished effects still cancel on exit.
+
+The three refreshed exterior doors use a near-90-degree opening and shorter transition timing. Their vestibule end walls now contain empty photo frames, with two additional frames on each interior return wall. `photo-frames.js` exposes nine named slots, all null until the user provides photographs; no placeholder photos are invented. Frame materials match each house, and future photos are fitted without cropping. No slots were added to the Projects House.
+
+Regression checks cover door clearance through the larger swing, absence of automatic contact dialogs, and exclusion of new photo frames from the Gallery. Browser visual review remains pending; the local server was kept stopped.

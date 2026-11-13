@@ -13,3 +13,5 @@ requests[1].done({scene:new THREE.Mesh(new THREE.BoxGeometry(1,1,1)),animations:
 queue.update(.2,true,new THREE.Vector3());assert.ok(part.rotation.y>before,'Cached animation resumes after re-entry');assert.equal(requests.filter(r=>r.path==='model-0').length,1,'Loaded model is not downloaded again');
 const world=new THREE.Group(),rooms=['gallery','about','studio','contact'].map((id,i)=>({id,cx:60+i*22})),decor=createRoomDecor(rooms,world,{textures:false});decor.setActive('about');assert.equal([...decor.groups.values()].filter(g=>g.visible).length,1);decor.setActive(null);assert.ok([...decor.groups.values()].every(g=>!g.visible));
 console.log('Passed: entry-only downloads, concurrency limit, all-model queueing, exit pause, cached reuse, and isolated interior finishes.');
+
+for(const [id,group] of decor.groups){const slots=[];group.traverse(object=>{if(object.userData.photoSlot)slots.push(object.userData.photoSlot);});assert.equal(slots.length,id==='gallery'?0:2,'New photo frames are restricted to the three refreshed houses');}

@@ -24,17 +24,17 @@ export function avoidContactCrates(next,previous,cx=126){
 
 function labelMap(account,revealed){
  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=512;const ctx=canvas.getContext('2d');
- ctx.fillStyle=revealed?'#233d39':'#b73931';ctx.fillRect(0,0,512,512);
- if(!revealed){ctx.fillStyle='#de5545';for(let x=0;x<512;x+=64){ctx.fillRect(x,0,4,512);ctx.fillStyle='#842925';ctx.fillRect(x+58,0,6,512);ctx.fillStyle='#de5545';}ctx.fillStyle='#f5e8cb';ctx.fillRect(0,150,512,174);ctx.fillStyle='#292e29';ctx.textAlign='center';ctx.font='900 125px monospace';ctx.fillText('TNT',256,282);}
+ ctx.fillStyle=revealed?'#233d39':'#85443b';ctx.fillRect(0,0,512,512);
+ if(!revealed){ctx.fillStyle='#aa6550';for(let x=0;x<512;x+=64){ctx.fillRect(x,0,4,512);ctx.fillStyle='#63382f';ctx.fillRect(x+58,0,6,512);ctx.fillStyle='#aa6550';}ctx.fillStyle='#f5e8cb';ctx.fillRect(0,150,512,174);ctx.fillStyle='#292e29';ctx.textAlign='center';ctx.font='900 125px monospace';ctx.fillText('TNT',256,282);}
  ctx.textAlign='center';ctx.fillStyle=revealed?'#e7c680':'#f5e8cb';ctx.font='600 20px Arial';ctx.fillText(revealed?'CONTACT UNLOCKED':'CLICK TO REVEAL',256,revealed?75:63);
  ctx.fillStyle='#fff0d7';ctx.font='600 43px Arial';ctx.fillText(account.label,256,revealed?174:398,460);
- ctx.font='23px Arial';ctx.fillStyle='#c7d1bd';if(revealed){ctx.fillText(account.value,256,260,460);ctx.font='20px Arial';ctx.fillText('Tap to open contact card',256,403,460);}else{ctx.fillStyle='#f0cda6';ctx.fillText('Tap the crate',256,459);}
+ ctx.font='23px Arial';ctx.fillStyle='#c7d1bd';if(revealed){ctx.fillText(account.value,256,260,460);ctx.font='20px Arial';ctx.fillText('Select the contact link below',256,403,460);}else{ctx.fillStyle='#f0cda6';ctx.fillText('Tap the crate',256,459);}
  const map=new THREE.CanvasTexture(canvas);map.colorSpace=THREE.SRGBColorSpace;return map;
 }
 
 export function createContactCrates(parent,{textures=true,reduced=false,onReveal=()=>{}}={}){
  const group=new THREE.Group();group.name='TNT contact vault';parent.add(group);const entries=new Map(),accounts=contactAccounts();let active=false,burst=null;
- const red=new THREE.MeshStandardMaterial({color:'#b33d32',roughness:.85}),dark=new THREE.MeshStandardMaterial({color:'#242b28',roughness:.8}),gold=new THREE.MeshStandardMaterial({color:'#d2ad61',metalness:.35,roughness:.6}),paper=new THREE.MeshStandardMaterial({color:'#f0dfba',roughness:.85});
+ const red=new THREE.MeshStandardMaterial({color:'#87473c',roughness:.85}),dark=new THREE.MeshStandardMaterial({color:'#242b28',roughness:.8}),gold=new THREE.MeshStandardMaterial({color:'#d2ad61',metalness:.35,roughness:.6}),paper=new THREE.MeshStandardMaterial({color:'#f0dfba',roughness:.85});
  const cube=new THREE.BoxGeometry(1,1,1);
  function box(name,size,position,material,parent=group){const mesh=new THREE.Mesh(cube,material);mesh.name=name;mesh.scale.set(...size);mesh.position.set(...position);parent.add(mesh);return mesh;}
  // A clear central aisle, with small hazard pads below each exhibit.
@@ -58,28 +58,31 @@ export function createContactCrates(parent,{textures=true,reduced=false,onReveal
   entries.set(account.id,{root,shell,card,spark,account,state:'sealed'});
  }
  const effects=new THREE.Group();effects.name='Reusable contact burst';effects.visible=false;group.add(effects);
- const materials=['#cc513c','#d9ab60','#525b51','#efd5a3'].map(color=>new THREE.MeshBasicMaterial({color,transparent:true,opacity:1,depthWrite:false}));
- const particles=[];for(let i=0;i<28;i++){
-  const mesh=new THREE.Mesh(cube,materials[i%materials.length]);mesh.scale.setScalar(i%4===2?.18:.095);mesh.raycast=()=>{};effects.add(mesh);
-  const angle=i*2.39996323;particles.push({mesh,velocity:new THREE.Vector3(Math.cos(angle)*(1+i%3*.3),.8+i%5*.38,Math.sin(angle)*(1+i%3*.3))});
+ const materials=['#955e47','#ad8d65','#465157','#c4b6a0'].map(color=>new THREE.MeshBasicMaterial({color,transparent:true,opacity:1,depthWrite:false}));
+ const particles=[];for(let i=0;i<16;i++){
+  const mesh=new THREE.Mesh(cube,materials[i%materials.length]);mesh.scale.set(.025+i%3*.012,.08+i%4*.025,.12+i%3*.035);mesh.raycast=()=>{};effects.add(mesh);
+  const angle=i*2.39996323;particles.push({mesh,velocity:new THREE.Vector3(Math.cos(angle)*(.6+i%3*.14),.25+i%5*.12,Math.sin(angle)*(.6+i%3*.14))});
  }
- const ring=new THREE.Mesh(new THREE.TorusGeometry(.65,.025,5,36),new THREE.MeshBasicMaterial({color:'#e5bc7c',transparent:true,opacity:0,depthWrite:false}));ring.rotation.x=Math.PI/2;ring.raycast=()=>{};effects.add(ring);
- function finish(entry){entry.shell.visible=false;entry.card.visible=true;entry.state='revealed';effects.visible=false;burst=null;onReveal(entry.account.id);}
+ let smokeMap=null;if(textures){const canvas=document.createElement('canvas');canvas.width=canvas.height=64;const ctx=canvas.getContext('2d'),gradient=ctx.createRadialGradient(32,32,0,32,32,32);gradient.addColorStop(0,'rgba(135,142,137,.5)');gradient.addColorStop(.45,'rgba(100,109,108,.22)');gradient.addColorStop(1,'rgba(70,80,80,0)');ctx.fillStyle=gradient;ctx.fillRect(0,0,64,64);smokeMap=new THREE.CanvasTexture(canvas);}
+ const smoke=[];for(let i=0;i<8;i++){const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:smokeMap,color:'#b8bfba',transparent:true,opacity:0,depthWrite:false}));sprite.raycast=()=>{};effects.add(sprite);smoke.push(sprite);}
+
+ function finish(entry){entry.shell.visible=false;entry.card.visible=true;entry.card.position.y=0;entry.state='revealed';effects.visible=false;burst=null;onReveal(entry.account.id);}
  function detonate(id){
   const entry=entries.get(id);if(!active||!entry||burst)return false;
   if(entry.state==='revealed'){onReveal(id);return true;}
   if(reduced){finish(entry);return true;}
   entry.state='ignited';burst={entry,elapsed:0};effects.position.copy(entry.root.position);return true;
  }
- function setActive(value){active=value;if(!active){hover(null);effects.visible=false;if(burst){burst.entry.shell.rotation.set(0,0,0);burst.entry.shell.visible=true;burst.entry.state='sealed';burst=null;}}}
- function hover(id){for(const [key,entry] of entries){entry.root.scale.setScalar(key===id?1.035:1);entry.spark.visible=key===id||entry.state==='ignited';}}
+ function setActive(value){active=value;if(!active){hover(null);effects.visible=false;if(burst){burst.entry.shell.rotation.set(0,0,0);burst.entry.card.visible=false;burst.entry.shell.visible=true;burst.entry.state='sealed';burst=null;}}}
+ function hover(id){for(const [key,entry] of entries){entry.root.scale.setScalar(1);entry.spark.visible=key===id||entry.state==='ignited';}}
  function update(dt){
   if(!active||!burst)return;burst.elapsed+=Math.max(0,dt);const {entry,elapsed}=burst;
-  if(elapsed<.2){entry.shell.rotation.z=Math.sin(elapsed*65)*.025;return;}
+  if(elapsed<.2){entry.spark.scale.setScalar(.07+elapsed*.08);return;}
   entry.shell.rotation.z=0;entry.shell.visible=false;effects.visible=true;
   const age=elapsed-.2,fade=Math.max(0,1-age/.65);materials.forEach(material=>material.opacity=fade);
-  for(const {mesh,velocity} of particles){mesh.position.copy(velocity).multiplyScalar(age*1.7);mesh.position.y-=2.8*age*age;mesh.rotation.set(age*4,age*3,age*2);}
-  ring.scale.setScalar(1+age*2.5);ring.material.opacity=fade*.6;
+  for(const {mesh,velocity} of particles){mesh.position.copy(velocity).multiplyScalar(age*1.3);mesh.position.y-=2.5*age*age;mesh.rotation.set(age*1.5,age,age*.8);}
+  smoke.forEach((sprite,i)=>{const angle=i*2.399;sprite.position.set(Math.cos(angle)*age*.55,age*.65+(i%3)*.08,Math.sin(angle)*age*.55);sprite.scale.setScalar(.3+age*1.4);sprite.material.opacity=Math.sin(Math.min(1,age/.65)*Math.PI)*.18;});
+  if(age>.18){entry.card.visible=true;entry.card.position.y=-.08*Math.max(0,1-(age-.18)/.4);}
   if(elapsed>=.85)finish(entry);
  }
  return{group,entries,effects,detonate,setActive,hover,update,get busy(){return!!burst;},get active(){return active;}};

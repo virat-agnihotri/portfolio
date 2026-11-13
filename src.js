@@ -6,7 +6,7 @@ import { createEntrances, entrancePose } from './entrances.js';
 import { addTown, nearbyShop, shopGlance } from './town.js';
 import { easeWalking, wrapAngle } from './movement.js';
 
-import { profile, projects, galleryHTML, projectHTML, aboutHTML, skillsHTML, contactHTML, contactAccountHTML, contactCratePickerHTML } from './content.js';
+import { profile, projects, galleryHTML, projectHTML, aboutHTML, skillsHTML, contactHTML, contactAccounts, contactCratePickerHTML } from './content.js';
 import { createGalleryExhibits } from './gallery.js';
 import { avoidGalleryPlinths } from './gallery-layout.js';
 import { createInteriors } from './interiors.js';
@@ -64,7 +64,7 @@ function enterRoom(room){if(transition||!room)return;closeDialogs();if(!ready){o
  entrance={room,elapsed:0,from:position.clone(),fromYaw:yaw,fromPitch:pitch,targetYaw,approach,doorway,inside:new THREE.Vector3(side*7.65,1.7,room.z)};
  $('#world').style.transition='none';
 }
-function updateEntrance(dt){if(!entrance)return;const shot=entrance;shot.elapsed+=dt;const pose=entrancePose(shot.elapsed);const entry=entrances.entries.get(shot.room.id);entry.hinge.rotation.y=pose.door*1.45;renderer.shadowMap.needsUpdate=true;
+function updateEntrance(dt){if(!entrance)return;const shot=entrance;shot.elapsed+=dt;const pose=entrancePose(shot.elapsed,shot.room.id==='gallery'?1:.86);const entry=entrances.entries.get(shot.room.id);entry.hinge.rotation.y=pose.door*(shot.room.id==='gallery'?1.45:1.58);renderer.shadowMap.needsUpdate=true;
  if(pose.stage==='approach'){position.lerpVectors(shot.from,shot.approach,pose.t);yaw=THREE.MathUtils.lerp(shot.fromYaw,shot.targetYaw,pose.t);pitch=THREE.MathUtils.lerp(shot.fromPitch,-.025,pose.t);}
  else if(pose.stage==='walk'){position.lerpVectors(shot.approach,shot.inside,pose.t);}
  $('#location').textContent=(pose.stage==='approach'?'Approaching ':pose.stage==='open'?'Opening the door · ':'Entering ')+shot.room.name;
@@ -98,10 +98,14 @@ function openRoomDetails(room){
  if(!details.open)details.showModal();
 }
 function openContactAccount(id){
- if(currentRoom?.id!=='contact'||map.open||details.open||transition)return;
- stopWalking();if(id==='message'){openRoomDetails(currentRoom);$('#contact-form')?.scrollIntoView({block:'center'});return;}
- details.classList.remove('project-reading');$('#detail-content').innerHTML=contactAccountHTML(id);$('#all-contacts').onclick=()=>openRoomDetails(currentRoom);details.showModal();
+ if(currentRoom?.id!=='contact'||transition)return;const account=contactAccounts().find(item=>item.id===id);if(!account)return;
+ $('#contact-reveal-name').textContent=account.label;$('#contact-reveal-value').textContent=account.value;
+ const link=$('#contact-reveal-link');link.hidden=id==='message';if(account.href){link.href=account.href;link.textContent=account.action+' ↗';if(account.href.startsWith('https:')){link.target='_blank';link.rel='noopener noreferrer';}else link.removeAttribute('target');}
+ $('#contact-compose').hidden=id!=='message';$('#contact-reveal').hidden=false;
 }
+$('#contact-reveal-close').onclick=()=>$('#contact-reveal').hidden=true;
+$('#contact-compose').onclick=()=>{if(currentRoom?.id==='contact'){openRoomDetails(currentRoom);$('#contact-form')?.scrollIntoView({block:'center'});}};
+
 function goToExhibit(index){
  const exhibit=galleryExhibits?.get(index);if(!exhibit||currentRoom?.id!=='gallery'||inspection?.busy)return;
  const view=exhibitView(exhibit.slot);let route;try{route=exhibitRoute(position,view.position);}catch{toast('Step away from the stand and try again.');return;}closeDialogs();stopWalking();exhibitTravel={from:position.clone(),fromYaw:yaw,fromPitch:pitch,view,route,elapsed:0};transition=true;$('#exhibit-actions').hidden=true;
@@ -137,7 +141,7 @@ try{
    // Batch the static Blender meshes by material to avoid thousands of draw
    // calls. Keep the six gallery targets separate for ray picking.
    gltf.scene.updateMatrixWorld(true);world=new THREE.Group();entrances=createEntrances(rooms,world);interiors=createInteriors(rooms,world,scene);galleryRoom=createGalleryRoom(world,scene);roomDecor=createRoomDecor(rooms,world,{reduced,onContactReveal:openContactAccount});addWayfinding(rooms,world);const batches=new Map(),edgeParts=[],styled=new Set();
-   gltf.scene.traverse(o=>{if(!o.isMesh||/^sign_(gallery|about|studio|contact)$/.test(o.name)||/^(room_title|room_subtitle)/.test(o.name)||(/^board_label/.test(o.name)&&rooms.some(r=>r.id===o.parent?.name))||/^project_(frame|art|label)_?/.test(o.name)||/^(display_pedestal|exhibit|gallery_viewing_bench|gallery_bench_leg|gallery_picture_light|about_armchair|about_armrest|about_reading_rug|about_bookcase|about_shelf|about_spine|about_journal|about_entry_mat|contact_writing_desk|contact_desk_leg|contact_envelope|contact_sorting_cubby|contact_cubby_label|post_counter|letter|mailbox)/.test(o.name))return;const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(o.matrixWorld);/* Set the decorative café back so Projects is the first street entrance. */if(o.parent?.name==='cafe')g.translate(-14,0,0);if(/^(tree_trunk|tree_grate|branch|foliage|room_plant|room_planter)/.test(o.name)){g.computeBoundingBox();const center=g.boundingBox.getCenter(new THREE.Vector3());if(((center.x>75.5&&center.x<88.5)||(center.x>119.5&&center.x<132.5))&&center.z>-12.5&&center.z<2.5){g.dispose();return;}}if(/^(journal_table|table_support)/.test(o.name)){g.computeBoundingBox();if(g.boundingBox.min.x>75.5&&g.boundingBox.max.x<88.5){g.dispose();return;}}for(const attr of Object.keys(g.attributes))if(!['position','normal'].includes(attr))g.deleteAttribute(attr);if(!g.attributes.normal)g.computeVertexNormals();
+   gltf.scene.traverse(o=>{if(!o.isMesh||/^sign_(gallery|about|studio|contact)$/.test(o.name)||/^(room_title|room_subtitle)/.test(o.name)||(/^board_label/.test(o.name)&&rooms.some(r=>r.id===o.parent?.name))||/^project_(frame|art|label)_?/.test(o.name)||/^(display_pedestal|exhibit|gallery_viewing_bench|gallery_bench_leg|gallery_picture_light|about_armchair|about_armrest|about_reading_rug|about_bookcase|about_shelf|about_spine|about_journal|about_entry_mat|contact_writing_desk|contact_desk_leg|contact_envelope|contact_sorting_cubby|contact_cubby_label|post_counter|letter|mailbox)/.test(o.name))return;const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(o.matrixWorld);/* Set the decorative café back so Projects is the first street entrance. */if(o.parent?.name==='cafe')g.translate(-14,0,0);if(/^(tree_trunk|tree_grate|branch|foliage|room_plant|room_planter)/.test(o.name)){g.computeBoundingBox();const center=g.boundingBox.getCenter(new THREE.Vector3());if(((center.x>75.5&&center.x<88.5)||(center.x>119.5&&center.x<132.5))&&center.z>-12.5&&center.z<2.5){g.dispose();return;}}if(/^(workbench|shelf|book|monitor|studio_table|studio_center_worktable|studio_notebook)/.test(o.name)){g.computeBoundingBox();const center=g.boundingBox.getCenter(new THREE.Vector3());if(center.x>97.5&&center.x<110.5&&center.z>-12.5&&center.z<2.5){g.dispose();return;}}if(/^(journal_table|table_support)/.test(o.name)){g.computeBoundingBox();if(g.boundingBox.min.x>75.5&&g.boundingBox.max.x<88.5){g.dispose();return;}}for(const attr of Object.keys(g.attributes))if(!['position','normal'].includes(attr))g.deleteAttribute(attr);if(!g.attributes.normal)g.computeVertexNormals();
    worldUV(g,o.material);if(!styled.has(o.material.uuid)){styleMaterial(o.material);styled.add(o.material.uuid);}
    if(interiors.extract(o,g,o.material)||entrances.extract(o,g,o.material))return;
    const n=o.name.toLowerCase();if(!n.includes('foliage')&&!n.includes('plant')&&!n.includes('sign_')&&!n.includes('label')&&!n.includes('text')&&!n.includes('seam')&&!n.includes('joint')&&!n.includes('wire')&&!n.includes('bulb')&&g.attributes.position.count<5000)edgeParts.push(new THREE.EdgesGeometry(g,35));
@@ -180,7 +184,7 @@ function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-lastTime
  const shop=started&&!currentRoom&&!transition&&!modals()?nearbyShop(rooms,position):null;
  const desiredGlance=!reduced&&time-lastManualLook>3?shopGlance(shop,position,yaw):0;
  glance=THREE.MathUtils.damp(glance,desiredGlance,3,dt);if(transition||currentRoom)glance=0;
- if(inspection?.busy)inspection.update(dt);else camera.rotation.set(pitch,yaw+glance,0);camera.updateMatrixWorld();galleryRoom?.update(currentRoom?.id==='gallery',camera.position);galleryExhibits?.update(dt,currentRoom?.id==='gallery',position,inspection?.paused||false);hoverClock+=dt;if(hoverClock>.05){updateDoorHover();hoverClock=0;}atmosphere.update(time);roomDecor?.update(dt);$('#contact-hint').hidden=currentRoom?.id!=='contact'||transition||modals();updateExhibitActions();renderer.render(scene,camera);
+ if(inspection?.busy)inspection.update(dt);else camera.rotation.set(pitch,yaw+glance,0);camera.updateMatrixWorld();galleryRoom?.update(currentRoom?.id==='gallery',camera.position);galleryExhibits?.update(dt,currentRoom?.id==='gallery',position,inspection?.paused||false);hoverClock+=dt;if(hoverClock>.05){updateDoorHover();hoverClock=0;}atmosphere.update(time);roomDecor?.update(dt);if(currentRoom?.id!=='contact')$('#contact-reveal').hidden=true;$('#contact-hint').hidden=currentRoom?.id!=='contact'||transition||modals();updateExhibitActions();renderer.render(scene,camera);
  if(!currentRoom&&!transition){nearRoom=shop;$('#location').textContent=!started?'The south entrance':position.z>-3?'Café corner':position.z>-12?'Gallery lane':position.z>-23?'Explorer’s row':position.z>-34?'The makers’ district':position.z>-47?'Post office lane':'The fountain square';}
  const interaction=$('#interaction');interaction.hidden=!shop;if(shop){interaction.classList.toggle('shop-left',shop.x<0);interaction.classList.toggle('shop-right',shop.x>0);interaction.classList.toggle('door-hovered',hoveredDoor===shop.id);interaction.setAttribute('aria-label','Enter '+shop.name);if(interaction.dataset.room!==shop.id){interaction.dataset.room=shop.id;interaction.innerHTML=`<span class="shop-caption">${shop.x<0?'← ON YOUR LEFT':'ON YOUR RIGHT →'}</span><strong>${shop.name}</strong><small>E · Step inside ↗</small>`;}interaction.querySelector('small').textContent=hoveredDoor===shop.id?'Click the door to enter ↗':'E · Step inside ↗';}
 }

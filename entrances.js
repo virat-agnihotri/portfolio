@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {addPhotoFrame} from './photo-frames.js';
 
 const smooth=t=>t*t*(3-2*t);
 const heights={gallery:7.5,about:8.4,studio:6.9,contact:8};
@@ -25,8 +26,9 @@ export function createEntrances(rooms,world){
   for(const sign of [-1,1])box([5,h,.22],[side*9,h/2,room.z+sign*3.95]);
   const trim=frameMaterial||material;for(const sign of [-1,1])box([.2,2.75,.13],[side*6.43,1.45,room.z+sign*.7],trim);box([.2,.15,1.5],[side*6.43,2.75,room.z],trim);
   // A short dark vestibule provides depth during the move through the doorway.
-  const vestibule=new THREE.MeshStandardMaterial({color:'#38483d',roughness:1});box([4.4,.1,1.6],[side*8.7,.04,room.z],vestibule);
+  const vestibule=new THREE.MeshStandardMaterial({color:({about:'#293c55',studio:'#ad826c',contact:'#20434a'})[room.id]||'#38483d',roughness:1});box([4.4,.1,1.6],[side*8.7,.04,room.z],vestibule);
   for(const sign of [-1,1])box([4.4,2.8,.1],[side*8.7,1.4,room.z+sign*.84],vestibule);
+  if(room.id!=='gallery'){box([.035,2.8,1.58],[side*11.34,1.4,room.z],vestibule);addPhotoFrame(world,room.id+'-entry',{position:[side*11.28,1.7,room.z],rotation:-side*Math.PI/2,width:1.15,height:1.65,color:room.id==='contact'?'#b38166':'#b69a6c'});}
  }}
  function reset(){for(const entry of entries.values())entry.hinge.rotation.y=0;}
  function hover(id){for(const entry of entries.values()){const active=entry.room.id===id;for(const object of entry.hinge.children){if(object.isMesh){object.material.emissive.copy(active?new THREE.Color('#b9904d'):object.userData.baseEmissive);object.material.emissiveIntensity=active?.42:object.userData.baseEmissiveIntensity;}else if(object.isLineSegments){object.material.color.set(active?'#f5d69a':'#344335');object.material.opacity=active?.95:.3;}}}}
