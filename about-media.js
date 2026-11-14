@@ -1,6 +1,6 @@
-// Original personal media supplied by the user; portrait is still pending.
+// Original personal media supplied by the user.
 export const aboutMedia={
- portrait:null,
+ portrait:'assets/about/virat-portrait.jpeg',
  resumePreview:'assets/about/resume-preview.png',
  typingEvidence:'assets/about/typing-speed.png',
  certificates:[

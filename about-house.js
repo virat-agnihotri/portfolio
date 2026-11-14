@@ -72,7 +72,8 @@ export function createAboutHouse(parent,{textures=true,computerLoader=null}={}){
  box('Task chair back',[.66,.72,.1],[0,1,-2.39],fabric);
  box('Chair stem',[.08,.44,.08],[0,.34,-2.7],silver);
  box('Chair base',[.73,.06,.09],[0,.15,-2.7],silver);box('Chair base',[.09,.06,.73],[0,.15,-2.7],silver);
- const stat=interactive(text([profile.typingWpm+' WPM','Typing speed'],[-5.94,2.65,-4.8],1.25,.6,Math.PI/2,{filled:true}),'typing');stat.name='Typing speed display';
+ const stat=interactive(addPhotoFrame(group,'typing-evidence',{position:[-6.02,2.65,-4.8],rotation:Math.PI/2,width:1.85,height:1.22,color:'#7c8595',source:aboutMedia.typingEvidence,textures}),'typing');stat.name='Typing speed display';
+ interactive(text([profile.typingWpm+' WPM · CLICK TO VIEW'],[-5.9,1.87,-4.8],1.85,.2,Math.PI/2),'typing');
  addAboutFurnishings(group);
  return{group,workstation,computer,activate(){computer.activate();}};
 }

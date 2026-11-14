@@ -190,3 +190,7 @@ Regression checks cover the real asset hash, embedded textures, fitted bounds, b
 `about-furnishings.js` adds a reading chair, side table with a book and mug, floor lamp, low bookcase, certificate sideboard, workstation shelves, and corner plants. Furniture collision bounds keep movement out of solid props while preserving the central walkway. Books share an instanced mesh. These furnishings affect only the About House.
 
 The computer attribution is removed from the biography and available through the small Credits footer button, alongside font and technology-logo licenses. Checks, tests, and production build pass. Browser review verified the furnished room, biography without the model credit, and the separate attribution panel with no console warnings/errors. The preview server was stopped after inspection.
+
+## Personal photos and botanical entrance frames
+
+The supplied portrait is installed in the About House portrait display. The supplied typing result is displayed on the wall as a clickable framed image, opening the existing full-size evidence view. Three local botanical SVG illustrations fill the Skills, About, and Contact entrance frames. Projects House is unchanged. Syntax checks, full regression tests, and production build pass; no preview server was started for this update.
