@@ -181,6 +181,12 @@ The About House now owns a separate inner shell in `about-house.js`: solid light
 
 The supplied `gaming_desktop_pc.glb` is copied unchanged as `dist/assets/models/gaming-desktop-pc.glb`. It already contains the tabletop, monitor, tower, keyboard, and mouse. `about-computer.js` turns the setup toward the entrance, fits it above procedural support legs, and batches static meshes by material/attribute layout (685 original meshes become 87 render meshes). Every model part retains the click action that opens the user's About information. A lightweight fallback stays visible until loading succeeds.
 
-The model loads only on the first About House entry and remains cached in the room group across visits. Its materials and embedded textures are preserved; no fan/mixer animation runs outside the room. Attribution from the GLB metadata is included in the About journal and `gaming-desktop-pc.CREDITS.txt`: Gaming Desktop PC by Yolala1232, CC BY 4.0.
+The model loads only on the first About House entry and remains cached in the room group across visits. Its materials and embedded textures are preserved; no fan/mixer animation runs outside the room. Attribution from the GLB metadata is included in the separate Credits panel and `gaming-desktop-pc.CREDITS.txt`: Gaming Desktop PC by Yolala1232, CC BY 4.0.
 
 Regression checks cover the real asset hash, embedded textures, fitted bounds, batching, click metadata, lazy entry loading, and cached reuse. Browser review confirmed the window-free room, correctly facing supplied PC, and profile interaction. The local server was stopped after review. Portrait and certificate images still await the user's files.
+
+## About House furnishings and separate credits
+
+`about-furnishings.js` adds a reading chair, side table with a book and mug, floor lamp, low bookcase, certificate sideboard, workstation shelves, and corner plants. Furniture collision bounds keep movement out of solid props while preserving the central walkway. Books share an instanced mesh. These furnishings affect only the About House.
+
+The computer attribution is removed from the biography and available through the small Credits footer button, alongside font and technology-logo licenses. Checks, tests, and production build pass. Browser review verified the furnished room, biography without the model credit, and the separate attribution panel with no console warnings/errors. The preview server was stopped after inspection.

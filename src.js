@@ -6,7 +6,7 @@ import { createEntrances, entrancePose } from './entrances.js';
 import { addTown, nearbyShop, shopGlance } from './town.js';
 import { easeWalking, wrapAngle } from './movement.js';
 
-import { profile, projects, galleryHTML, projectHTML, aboutHTML, skillsHTML, contactHTML, contactAccounts, contactCratePickerHTML, aboutFeatureHTML } from './content.js';
+import { profile, projects, galleryHTML, projectHTML, aboutHTML, skillsHTML, contactHTML, contactAccounts, contactCratePickerHTML, aboutFeatureHTML, creditsHTML } from './content.js';
 import { createGalleryExhibits } from './gallery.js';
 import { avoidGalleryPlinths } from './gallery-layout.js';
 import { createInteriors } from './interiors.js';
@@ -44,6 +44,7 @@ function openMap(){if(transition||inspection?.busy)return;stopWalking();if(!map.
 function closeDialogs(){map.close();details.close();stopWalking();}
 $('#map-button').onclick=openMap;
 $('#controls-help').onclick=()=>{if(transition||inspection?.busy)return;stopWalking();details.classList.add('project-reading');$('#detail-content').innerHTML='<div class="eyebrow">A QUICK GUIDE</div><h2>Make yourself<br>at home.</h2><div class="control-guide"><p><kbd>W A S D</kbd><span>Walk around</span></p><p><kbd>Drag</kbd><span>Look around</span></p><p><kbd>Scroll</kbd><span>Walk forward or backward</span></p><p><kbd>E</kbd><span>Enter a nearby building</span></p><p><kbd>M</kbd><span>Open the map</span></p><p><kbd>Esc</kbd><span>Close a view or leave a room</span></p></div><p class="detail-body">Click a model to rotate and zoom it. Click a poster to read the project.</p><button class="secondary-button" id="help-tour">Take an automatic stroll ↗</button>';$('#help-tour').onclick=()=>{details.close();$('#tour').click();};details.showModal();};
+$('#asset-credits').onclick=()=>{if(transition||inspection?.busy)return;stopWalking();details.classList.add('project-reading');$('#detail-content').innerHTML=creditsHTML();if(!details.open)details.showModal();};
 $('#stamps').onclick=()=>{openMap();toast(visited.size===4?'All four places discovered. Make yourself at home.':`${4-visited.size} more places to discover.`);};
 $('#map-places').innerHTML=rooms.map(r=>`<button class="map-place" data-room="${r.id}"><span>${r.number}</span><div><strong>${r.name}</strong><small>${r.kind}</small></div><b>↗</b></button>`).join('');
 document.querySelectorAll('[data-room]').forEach(b=>b.onclick=()=>enterRoom(rooms.find(r=>r.id===b.dataset.room)));updateVisits();

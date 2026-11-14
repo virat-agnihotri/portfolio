@@ -1,3 +1,4 @@
+import {creditsHTML} from './content.js';
 import {galleryScreenshots} from './gallery-layout.js';
 import assert from 'node:assert/strict';
 import { readFile,stat } from 'node:fs/promises';
@@ -23,3 +24,5 @@ assert.ok(contactHTML().includes('https://www.instagram.com/virat_.a.g/'));asser
 for(const id of ['lunar','tone','knowledge','docintel'])assert.equal(projects.find(project=>project.id===id).image,galleryScreenshots[id],'Wall poster and reading page use the same supplied image');assert.equal(galleryScreenshots.rocket,null);assert.equal(projects.find(project=>project.id==='rocket').image,null);
 
 const expectedRepositories={rocket:'Rocket_Simulator',lunar:'Lunar_Vision',knowledge:'Knowledege_Vault_AI',tone:'Tone-Analyser',docintel:'ai-powerednpdf-summarizer'};for(const project of projects){assert.equal(project.source,'https://github.com/virat-agnihotri/'+expectedRepositories[project.id]);assert.ok(!projectHTML(projects.indexOf(project)).includes('supplied by Virat Agnihotri'));}
+
+assert.ok(!aboutHTML().includes('Yolala1232'),'Model credit stays out of the personal biography');assert.ok(creditsHTML().includes('Yolala1232'));assert.ok(creditsHTML().includes('https://creativecommons.org/licenses/by/4.0/'));

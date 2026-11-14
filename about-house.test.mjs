@@ -1,3 +1,4 @@
+import {aboutFurnitureObstacles} from './about-furnishings.js';
 import assert from 'node:assert/strict';
 import {stat} from 'node:fs/promises';
 import * as THREE from 'three';
@@ -23,3 +24,6 @@ assert.ok(market.getObjectByName('Fruit vendor'));assert.equal(market.children.f
 console.log('Passed: clickable résumé, desktop and certificate targets, 60 WPM, authentic pending media, desk collision, and off-road fruit tent/vendor.');
 
 assert.ok(!about.group.getObjectByName('Window'));assert.equal(about.group.children.filter(object=>object.name==='Solid gallery wall').length,2);assert.ok(about.group.getObjectByName('Workstation alcove'));
+
+assert.ok(about.group.getObjectByName('Reading armchair'));assert.ok(about.group.getObjectByName('Low bookcase'));assert.ok(about.group.getObjectByName('Certificate sideboard'));
+for(const obstacle of aboutFurnitureObstacles){const next=new THREE.Vector3(104+obstacle.x,1.75,-5+obstacle.z),previous=next.clone().add(new THREE.Vector3(0,0,obstacle.halfZ+.5));avoidAboutDesk(next,previous);assert.ok(Math.abs(next.x-104-obstacle.x)>=obstacle.halfX-.00001||Math.abs(next.z+5-obstacle.z)>=obstacle.halfZ-.00001,'Furniture cannot be walked through');}

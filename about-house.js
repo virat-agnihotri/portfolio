@@ -3,6 +3,7 @@ import {addPhotoFrame} from './photo-frames.js';
 import {aboutMedia} from './about-media.js';
 import {profile} from './content.js';
 import {createAboutComputer} from './about-computer.js';
+import {addAboutFurnishings,aboutFurnitureObstacles} from './about-furnishings.js';
 
 export const aboutDisplayLayout={
  portrait:{position:[-6.02,2.65,2.5],rotation:Math.PI/2,width:1.25,height:1.6},
@@ -72,11 +73,18 @@ export function createAboutHouse(parent,{textures=true,computerLoader=null}={}){
  box('Chair stem',[.08,.44,.08],[0,.34,-2.7],silver);
  box('Chair base',[.73,.06,.09],[0,.15,-2.7],silver);box('Chair base',[.09,.06,.73],[0,.15,-2.7],silver);
  const stat=interactive(text([profile.typingWpm+' WPM','Typing speed'],[-5.94,2.65,-4.8],1.25,.6,Math.PI/2,{filled:true}),'typing');stat.name='Typing speed display';
+ addAboutFurnishings(group);
  return{group,workstation,computer,activate(){computer.activate();}};
 }
 
 export function avoidAboutDesk(next,previous,cx=104){
- const x=cx,z=-9.65,halfX=2.05,halfZ=1.12;
- if(Math.abs(next.x-x)<halfX&&Math.abs(next.z-z)<halfZ){if(Math.abs(previous.x-x)>=halfX)next.x=x+Math.sign(previous.x-x)*halfX;else next.z=z+(Math.sign(previous.z-z)||1)*halfZ;}
+ const obstacles=[{x:0,z:-4.65,halfX:2.05,halfZ:1.12},...aboutFurnitureObstacles];
+ for(const obstacle of obstacles){const x=cx+obstacle.x,z=-5+obstacle.z,dx=next.x-x,dz=next.z-z;
+  if(Math.abs(dx)>=obstacle.halfX||Math.abs(dz)>=obstacle.halfZ)continue;
+  if(Math.abs(previous.x-x)>=obstacle.halfX)next.x=x+(Math.sign(previous.x-x)||1)*obstacle.halfX;
+  else if(Math.abs(previous.z-z)>=obstacle.halfZ)next.z=z+(Math.sign(previous.z-z)||1)*obstacle.halfZ;
+  else if(obstacle.halfX-Math.abs(dx)<obstacle.halfZ-Math.abs(dz))next.x=x+(Math.sign(dx)||1)*obstacle.halfX;
+  else next.z=z+(Math.sign(dz)||1)*obstacle.halfZ;
+ }
  return next;
 }
