@@ -198,3 +198,9 @@ The supplied portrait is installed in the About House portrait display. The supp
 ## Uploaded background soundtrack
 
 The user-supplied audio is served locally as assets/audio/walk-soundtrack.mp3. The music button loads it only on request, loops at 18% volume, pauses on toggle or hidden tabs, and resumes from the current position. The former oscillator ambience is removed. Syntax checks, regression tests, and production build pass. Playback has not been checked in-browser; no local server was started.
+
+## Rocket frontend showcase and unfinished house
+
+Rocket now shares assets/projects/rocket-mission-showcase.png between its wall poster, index thumbnail, and notes. The notes also include two unchanged supplied screenshots, rocket-hangar.png and rocket-flight.png, for detailed reading. The montage uses the built-in image generation tool with Screenshots 196, 199, 204, 205, and 206 as inputs. Prompt: arrange the authentic screenshots into a dark landscape showcase, remove browser chrome/taskbars, place the overview across the top and vehicle library, launch/Earth views, and planar instrument beneath; use thin gold dividers, add only the Rocket Mission Simulator heading, preserve the UI content and avoid invented metrics or hardware mockups.
+
+street-details.js removes the unlabelled sidewalk boards, replaces the bookshop's old sign with The Next Chapter, clears the tree at its doorway, and adds a two-rail hazard barricade and Under Development notice. The Blender generator uses the updated title for future exports. Tests check actual GLB tree/board removal and barrier geometry; syntax, full tests, and production build pass. Browser review confirmed the Rocket wall artwork and three reading images, the clear unfinished doorway, signage, barricade, and no console warnings/errors. Preview server stopped afterward.

@@ -145,7 +145,7 @@ building('about','THE EXPLORER','MY STORY',-9,17,math.pi/2,'yellow')
 building('studio','THE WORKSHOP','EXPERIMENTS',9,26,-math.pi/2,'teal')
 building('contact','THE POST OFFICE','SAY HELLO',-9,39,math.pi/2,'blue')
 building('cafe','SLOW DAYS CAFE','TAKE A BREAK',-9,-6,math.pi/2,'cream',1)
-building('bookshop','PAPER & STORIES','GET LOST',9,47,-math.pi/2,'cream')
+building('bookshop','THE NEXT CHAPTER','UNDER DEVELOPMENT',9,47,-math.pi/2,'cream')
 for x,y,c in [(-16,55,'pink'),(16,62,'yellow'),(-16,66,'teal')]:building('background','LITTLE QUARTER','EXPLORE',x,y,0,c)
 # Cafe terrace tables, little stools, and an umbrella.
 for y in [-9,-5]:

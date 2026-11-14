@@ -49,3 +49,7 @@ for(const room of rooms){
  assert.equal(ray.intersectObject(world,true).length,0,'No solid foundation blocks the open doorway at ankle height');
 }
 doors.reset();
+
+const {omitStreetProp,addDevelopmentHouse}=await import('./street-details.js');
+let clearedTrees=0,removedBoards=0;gltf.scene.traverse(object=>{if(!object.isMesh)return;const center=new THREE.Box3().setFromObject(object).getCenter(new THREE.Vector3());if(omitStreetProp(object.name,object.parent?.name,center)){if(/^(tree_trunk|tree_grate|branch|foliage)/.test(object.name))clearedTrees++;if(object.name.startsWith('a_board'))removedBoards++;}});
+assert.ok(clearedTrees>0,'The tree blocking the unfinished house is removed');assert.ok(removedBoards>=4,'Blank street boards are removed');const future=addDevelopmentHouse(new THREE.Group(),{textures:false});assert.ok(future.getObjectByName('UNDER DEVELOPMENT / Something new is taking shape.'));assert.equal(future.children.filter(object=>object.name==='Barrier upright').length,2);

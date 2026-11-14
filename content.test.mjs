@@ -21,7 +21,7 @@ console.log('Passed: five real project entries, contact and education content, p
 
 assert.ok(contactHTML().includes('https://www.instagram.com/virat_.a.g/'));assert.ok(contactHTML().includes('https://x.com/ViratAgnihotrii'));assert.ok(contactHTML().includes('id="contact-form"'));assert.ok(aboutHTML().includes('IIIT Delhi'));assert.ok(aboutHTML().includes('Adobe Hackathon'));assert.ok(aboutHTML().includes('What I’m working toward'));
 
-for(const id of ['lunar','tone','knowledge','docintel'])assert.equal(projects.find(project=>project.id===id).image,galleryScreenshots[id],'Wall poster and reading page use the same supplied image');assert.equal(galleryScreenshots.rocket,null);assert.equal(projects.find(project=>project.id==='rocket').image,null);
+for(const id of ['lunar','tone','knowledge','docintel'])assert.equal(projects.find(project=>project.id===id).image,galleryScreenshots[id],'Wall poster and reading page use the same supplied image');assert.equal(projects.find(project=>project.id==='rocket').image,galleryScreenshots.rocket);assert.ok(projectHTML(0).includes('assets/projects/rocket-flight.png'));
 
 const expectedRepositories={rocket:'Rocket_Simulator',lunar:'Lunar_Vision',knowledge:'Knowledege_Vault_AI',tone:'Tone-Analyser',docintel:'ai-powerednpdf-summarizer'};for(const project of projects){assert.equal(project.source,'https://github.com/virat-agnihotri/'+expectedRepositories[project.id]);assert.ok(!projectHTML(projects.indexOf(project)).includes('supplied by Virat Agnihotri'));}
 
