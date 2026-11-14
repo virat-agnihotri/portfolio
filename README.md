@@ -194,3 +194,7 @@ The computer attribution is removed from the biography and available through the
 ## Personal photos and botanical entrance frames
 
 The supplied portrait is installed in the About House portrait display. The supplied typing result is displayed on the wall as a clickable framed image, opening the existing full-size evidence view. Three local botanical SVG illustrations fill the Skills, About, and Contact entrance frames. Projects House is unchanged. Syntax checks, full regression tests, and production build pass; no preview server was started for this update.
+
+## Uploaded background soundtrack
+
+The user-supplied audio is served locally as assets/audio/walk-soundtrack.mp3. The music button loads it only on request, loops at 18% volume, pauses on toggle or hidden tabs, and resumes from the current position. The former oscillator ambience is removed. Syntax checks, regression tests, and production build pass. Playback has not been checked in-browser; no local server was started.

@@ -28,7 +28,7 @@ const rooms=[
 const $=s=>document.querySelector(s);
 let scene,camera,renderer,world,atmosphere,entrances,interiors,galleryExhibits,galleryRoom,roomDecor,inspection,entrance=null,started=false,currentRoom=null,nearRoom=null,auto=false,transition=false,ready=false;
 let yaw=0,pitch=0,drag=false,pointerDistance=0,lastPointer={x:0,y:0},position=new THREE.Vector3(0,1.75,16),returnPosition=position.clone(),returnYaw=0;
-let keys=new Set(),visited=new Set(),time=0,lastTime=performance.now(),audio=null,toastTimer;
+let keys=new Set(),visited=new Set(),time=0,lastTime=performance.now(),audio=null,soundEnabled=false,toastTimer;
 let exhibitTravel=null,nearestExhibit=null;
 let glance=0,lastManualLook=-10,hoveredDoor=null,pressedDoor=null,pointerKnown=false;
 const walkVelocity=new THREE.Vector2(),nextPosition=new THREE.Vector3();let hoverClock=0;
@@ -172,7 +172,7 @@ canvas.addEventListener('pointerleave',()=>{pointerKnown=false;});
 canvas.addEventListener('pointerup',e=>{if(!drag)return;drag=false;if(inspection?.busy)return;pick(e);pressedDoor=null;});canvas.addEventListener('pointercancel',()=>{drag=false;pressedDoor=null;});
 addEventListener('keydown',e=>{const key=e.key.toLowerCase();if(inspection?.busy){if(key==='escape'){e.preventDefault();inspection.close();}return;}if(e.repeat&&['m','e','escape'].includes(key))return;if(modals()||transition||e.ctrlKey||e.metaKey||e.altKey)return;if(key==='m'){e.preventDefault();openMap();return;}if(key==='escape'&&currentRoom){leaveRoom();return;}if(key==='e'&&(hoveredDoor||nearRoom)&&!currentRoom){enterRoom(rooms.find(r=>r.id===hoveredDoor)||nearRoom);return;}if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(key)){e.preventDefault();if(!started)begin();keys.add(key);auto=false;updateTour();}});
 addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));addEventListener('blur',()=>{stopWalking();pointerKnown=false;});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){stopWalking();audio?.suspend();}else{lastTime=performance.now();audio?.resume().catch(()=>{});}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){stopWalking();audio?.pause();}else{lastTime=performance.now();if(soundEnabled)audio?.play().catch(()=>{soundEnabled=false;updateSoundButton();});}});
 document.querySelectorAll('[data-move]').forEach(b=>{const k={forward:'w',backward:'s',left:'a',right:'d'}[b.dataset.move];b.onpointerdown=e=>{e.preventDefault();if(transition||modals()||inspection?.busy)return;b.setPointerCapture(e.pointerId);begin();keys.add(k);auto=false;updateTour();};b.onpointerup=b.onpointercancel=b.onlostpointercapture=()=>keys.delete(k);});
 let scrollImpulse=0;addEventListener('wheel',e=>{if(inspection?.active){e.preventDefault();inspection.zoom(e.deltaY);return;}if(modals()||!ready||transition||inspection?.busy)return;e.preventDefault();begin();auto=false;updateTour();scrollImpulse=THREE.MathUtils.clamp(scrollImpulse+e.deltaY*.012,-9,9);},{passive:false});
 $('#interaction').onclick=()=>{if(nearRoom)enterRoom(nearRoom);};
@@ -195,5 +195,12 @@ function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-lastTime
  const interaction=$('#interaction');interaction.hidden=!shop;if(shop){interaction.classList.toggle('shop-left',shop.x<0);interaction.classList.toggle('shop-right',shop.x>0);interaction.classList.toggle('door-hovered',hoveredDoor===shop.id);interaction.setAttribute('aria-label','Enter '+shop.name);if(interaction.dataset.room!==shop.id){interaction.dataset.room=shop.id;interaction.innerHTML=`<span class="shop-caption">${shop.x<0?'← ON YOUR LEFT':'ON YOUR RIGHT →'}</span><strong>${shop.name}</strong><small>E · Step inside ↗</small>`;}interaction.querySelector('small').textContent=hoveredDoor===shop.id?'Click the door to enter ↗':'E · Step inside ↗';}
 }
 addEventListener('resize',()=>{if(!renderer)return;camera.aspect=innerWidth/innerHeight;updateCameraView();renderer.setSize(innerWidth,innerHeight);});
-// Gentle sound is opt-in and generated locally. No autoplay or audio downloads.
-$('#sound').onclick=async()=>{try{if(audio){await audio.close();audio=null;$('#sound').textContent='♫';$('#sound').setAttribute('aria-label','Enable ambient sound');toast('Ambient sound off.');return;}const Context=window.AudioContext||window.webkitAudioContext;audio=new Context();const output=audio.createGain();output.gain.value=.025;output.connect(audio.destination);[130.81,196,261.63].forEach((frequency,i)=>{const osc=audio.createOscillator();osc.type='sine';osc.frequency.value=frequency;const gain=audio.createGain();gain.gain.value=.23/(i+1);osc.connect(gain);gain.connect(output);osc.start();});await audio.resume();$('#sound').textContent='♪';$('#sound').setAttribute('aria-label','Disable ambient sound');toast('A quiet soundtrack for your walk.');}catch{toast('Audio is unavailable in this browser.');}};
+// Soundtrack is opt-in, loaded on demand, and cached across toggles.
+function updateSoundButton(){const button=$('#sound');button.textContent=soundEnabled?'♪':'♫';button.setAttribute('aria-label',soundEnabled?'Disable background music':'Enable background music');button.setAttribute('aria-pressed',String(soundEnabled));}
+$('#sound').onclick=async()=>{
+ if(soundEnabled){soundEnabled=false;audio?.pause();updateSoundButton();toast('Music off.');return;}
+ if(!audio){audio=new Audio('assets/audio/walk-soundtrack.mp3');audio.loop=true;audio.volume=.18;audio.preload='none';audio.addEventListener('error',()=>{soundEnabled=false;updateSoundButton();toast('The soundtrack could not be loaded.');});}
+ soundEnabled=true;updateSoundButton();
+ try{await audio.play();if(!soundEnabled||document.hidden)audio.pause();else toast('Music on.');}
+ catch{if(soundEnabled){soundEnabled=false;updateSoundButton();toast('Music could not start. Tap the sound button to try again.');}}
+};
