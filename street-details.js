@@ -1,5 +1,13 @@
 import * as THREE from 'three';
 
+// Move the entire Skills-side tree into the gap between storefronts.
+export function adjustSkillsTree(name,geometry){
+ if(!/^(tree_trunk|tree_grate|branch|foliage)/.test(name))return false;
+ geometry.computeBoundingBox();const center=geometry.boundingBox.getCenter(new THREE.Vector3());
+ if(center.x> -8&&center.x< -4&&center.z> -17&&center.z< -13){geometry.translate(0,0,5);return true;}
+ return false;
+}
+
 export function omitStreetProp(name,parent,center){
  if(/^(a_board|board_label)/.test(name)||name==='sign_bookshop')return true;
  return /^(tree_trunk|tree_grate|branch|foliage)/.test(name)&&center.x>3&&center.x<9&&center.z>-51&&center.z< -43;

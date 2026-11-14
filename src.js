@@ -18,7 +18,7 @@ import { addWayfinding } from './wayfinding.js';
 import { avoidContactCrates } from './contact-crates.js';
 import { avoidAboutDesk } from './about-house.js';
 import { createFruitMarket } from './fruit-market.js';
-import {addDevelopmentHouse,omitStreetProp} from './street-details.js';
+import {addDevelopmentHouse,omitStreetProp,adjustSkillsTree} from './street-details.js';
 
 const rooms=[
  {id:'gallery',name:'The Projects House',kind:'PROJECTS & SELECTED WORK',number:'01',x:6.25,z:-4,cx:60,title:'A few things<br>I made.',description:'Five projects in scientific simulation, computer vision, and applied AI. Select a frame to explore the build.',action:'Discover the work ↗'},
@@ -29,7 +29,7 @@ const rooms=[
 const $=s=>document.querySelector(s);
 let scene,camera,renderer,world,atmosphere,entrances,interiors,galleryExhibits,galleryRoom,roomDecor,inspection,entrance=null,started=false,currentRoom=null,nearRoom=null,auto=false,transition=false,ready=false;
 let yaw=0,pitch=0,drag=false,pointerDistance=0,lastPointer={x:0,y:0},position=new THREE.Vector3(0,1.75,16),returnPosition=position.clone(),returnYaw=0;
-let keys=new Set(),visited=new Set(),time=0,lastTime=performance.now(),audio=null,soundEnabled=false,toastTimer;
+let keys=new Set(),visited=new Set(),time=0,lastTime=performance.now(),audio=null,soundEnabled=true,toastTimer;
 let exhibitTravel=null,nearestExhibit=null;
 let glance=0,lastManualLook=-10,hoveredDoor=null,pressedDoor=null,pointerKnown=false;
 const walkVelocity=new THREE.Vector2(),nextPosition=new THREE.Vector3();let hoverClock=0;
@@ -148,7 +148,7 @@ try{
    // Batch the static Blender meshes by material to avoid thousands of draw
    // calls. Keep the six gallery targets separate for ray picking.
    gltf.scene.updateMatrixWorld(true);world=new THREE.Group();createFruitMarket(world);addDevelopmentHouse(world);entrances=createEntrances(rooms,world);interiors=createInteriors(rooms,world,scene);galleryRoom=createGalleryRoom(world,scene);roomDecor=createRoomDecor(rooms,world,{reduced,onContactReveal:openContactAccount});addWayfinding(rooms,world);const batches=new Map(),edgeParts=[],styled=new Set();
-   gltf.scene.traverse(o=>{if(!o.isMesh||/^sign_(gallery|about|studio|contact)$/.test(o.name)||/^(room_title|room_subtitle)/.test(o.name)||(/^board_label/.test(o.name)&&rooms.some(r=>r.id===o.parent?.name))||/^project_(frame|art|label)_?/.test(o.name)||/^(display_pedestal|exhibit|gallery_viewing_bench|gallery_bench_leg|gallery_picture_light|about_armchair|about_armrest|about_reading_rug|about_bookcase|about_shelf|about_spine|about_journal|about_entry_mat|studio_pinboard|studio_pinned_note|studio_pendant|studio_light_canopy|contact_writing_desk|contact_desk_leg|contact_envelope|contact_sorting_cubby|contact_cubby_label|post_counter|letter|mailbox)/.test(o.name))return;const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(o.matrixWorld);g.computeBoundingBox();if(omitStreetProp(o.name,o.parent?.name,g.boundingBox.getCenter(new THREE.Vector3()))){g.dispose();return;}/* Set the decorative café back so Projects is the first street entrance. */if(o.parent?.name==='cafe')g.translate(-14,0,0);if(/^(tree_trunk|tree_grate|branch|foliage|room_plant|room_planter)/.test(o.name)){g.computeBoundingBox();const center=g.boundingBox.getCenter(new THREE.Vector3());if(((center.x>75.5&&center.x<88.5)||(center.x>119.5&&center.x<132.5)||(center.x>97.5&&center.x<110.5))&&center.z>-12.5&&center.z<2.5){g.dispose();return;}}if(/^(workbench|shelf|book|monitor|studio_table|studio_center_worktable|studio_notebook)/.test(o.name)){g.computeBoundingBox();const center=g.boundingBox.getCenter(new THREE.Vector3());if(center.x>97.5&&center.x<110.5&&center.z>-12.5&&center.z<2.5){g.dispose();return;}}if(/^(journal_table|table_support)/.test(o.name)){g.computeBoundingBox();if(g.boundingBox.min.x>75.5&&g.boundingBox.max.x<88.5){g.dispose();return;}}for(const attr of Object.keys(g.attributes))if(!['position','normal'].includes(attr))g.deleteAttribute(attr);if(!g.attributes.normal)g.computeVertexNormals();
+   gltf.scene.traverse(o=>{if(!o.isMesh||/^sign_(gallery|about|studio|contact)$/.test(o.name)||/^(room_title|room_subtitle)/.test(o.name)||(/^board_label/.test(o.name)&&rooms.some(r=>r.id===o.parent?.name))||/^project_(frame|art|label)_?/.test(o.name)||/^(display_pedestal|exhibit|gallery_viewing_bench|gallery_bench_leg|gallery_picture_light|about_armchair|about_armrest|about_reading_rug|about_bookcase|about_shelf|about_spine|about_journal|about_entry_mat|studio_pinboard|studio_pinned_note|studio_pendant|studio_light_canopy|contact_writing_desk|contact_desk_leg|contact_envelope|contact_sorting_cubby|contact_cubby_label|post_counter|letter|mailbox)/.test(o.name))return;const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(o.matrixWorld);g.computeBoundingBox();adjustSkillsTree(o.name,g);g.computeBoundingBox();if(omitStreetProp(o.name,o.parent?.name,g.boundingBox.getCenter(new THREE.Vector3()))){g.dispose();return;}/* Set the decorative café back so Projects is the first street entrance. */if(o.parent?.name==='cafe')g.translate(-14,0,0);if(/^(tree_trunk|tree_grate|branch|foliage|room_plant|room_planter)/.test(o.name)){g.computeBoundingBox();const center=g.boundingBox.getCenter(new THREE.Vector3());if(((center.x>75.5&&center.x<88.5)||(center.x>119.5&&center.x<132.5)||(center.x>97.5&&center.x<110.5))&&center.z>-12.5&&center.z<2.5){g.dispose();return;}}if(/^(workbench|shelf|book|monitor|studio_table|studio_center_worktable|studio_notebook)/.test(o.name)){g.computeBoundingBox();const center=g.boundingBox.getCenter(new THREE.Vector3());if(center.x>97.5&&center.x<110.5&&center.z>-12.5&&center.z<2.5){g.dispose();return;}}if(/^(journal_table|table_support)/.test(o.name)){g.computeBoundingBox();if(g.boundingBox.min.x>75.5&&g.boundingBox.max.x<88.5){g.dispose();return;}}for(const attr of Object.keys(g.attributes))if(!['position','normal'].includes(attr))g.deleteAttribute(attr);if(!g.attributes.normal)g.computeVertexNormals();
    worldUV(g,o.material);if(!styled.has(o.material.uuid)){styleMaterial(o.material);styled.add(o.material.uuid);}
    if(interiors.extract(o,g,o.material)||entrances.extract(o,g,o.material))return;
    const n=o.name.toLowerCase();if(!n.includes('foliage')&&!n.includes('plant')&&!n.includes('sign_')&&!n.includes('label')&&!n.includes('text')&&!n.includes('seam')&&!n.includes('joint')&&!n.includes('wire')&&!n.includes('bulb')&&g.attributes.position.count<5000)edgeParts.push(new THREE.EdgesGeometry(g,35));
@@ -173,7 +173,7 @@ canvas.addEventListener('pointerleave',()=>{pointerKnown=false;});
 canvas.addEventListener('pointerup',e=>{if(!drag)return;drag=false;if(inspection?.busy)return;pick(e);pressedDoor=null;});canvas.addEventListener('pointercancel',()=>{drag=false;pressedDoor=null;});
 addEventListener('keydown',e=>{const key=e.key.toLowerCase();if(inspection?.busy){if(key==='escape'){e.preventDefault();inspection.close();}return;}if(e.repeat&&['m','e','escape'].includes(key))return;if(modals()||transition||e.ctrlKey||e.metaKey||e.altKey)return;if(key==='m'){e.preventDefault();openMap();return;}if(key==='escape'&&currentRoom){leaveRoom();return;}if(key==='e'&&(hoveredDoor||nearRoom)&&!currentRoom){enterRoom(rooms.find(r=>r.id===hoveredDoor)||nearRoom);return;}if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(key)){e.preventDefault();if(!started)begin();keys.add(key);auto=false;updateTour();}});
 addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));addEventListener('blur',()=>{stopWalking();pointerKnown=false;});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){stopWalking();audio?.pause();}else{lastTime=performance.now();if(soundEnabled)audio?.play().catch(()=>{soundEnabled=false;updateSoundButton();});}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){stopWalking();audio?.pause();}else{lastTime=performance.now();if(soundEnabled)startSoundtrack();}});
 document.querySelectorAll('[data-move]').forEach(b=>{const k={forward:'w',backward:'s',left:'a',right:'d'}[b.dataset.move];b.onpointerdown=e=>{e.preventDefault();if(transition||modals()||inspection?.busy)return;b.setPointerCapture(e.pointerId);begin();keys.add(k);auto=false;updateTour();};b.onpointerup=b.onpointercancel=b.onlostpointercapture=()=>keys.delete(k);});
 let scrollImpulse=0;addEventListener('wheel',e=>{if(inspection?.active){e.preventDefault();inspection.zoom(e.deltaY);return;}if(modals()||!ready||transition||inspection?.busy)return;e.preventDefault();begin();auto=false;updateTour();scrollImpulse=THREE.MathUtils.clamp(scrollImpulse+e.deltaY*.012,-9,9);},{passive:false});
 $('#interaction').onclick=()=>{if(nearRoom)enterRoom(nearRoom);};
@@ -196,12 +196,18 @@ function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-lastTime
  const interaction=$('#interaction');interaction.hidden=!shop;if(shop){interaction.classList.toggle('shop-left',shop.x<0);interaction.classList.toggle('shop-right',shop.x>0);interaction.classList.toggle('door-hovered',hoveredDoor===shop.id);interaction.setAttribute('aria-label','Enter '+shop.name);if(interaction.dataset.room!==shop.id){interaction.dataset.room=shop.id;interaction.innerHTML=`<span class="shop-caption">${shop.x<0?'← ON YOUR LEFT':'ON YOUR RIGHT →'}</span><strong>${shop.name}</strong><small>E · Step inside ↗</small>`;}interaction.querySelector('small').textContent=hoveredDoor===shop.id?'Click the door to enter ↗':'E · Step inside ↗';}
 }
 addEventListener('resize',()=>{if(!renderer)return;camera.aspect=innerWidth/innerHeight;updateCameraView();renderer.setSize(innerWidth,innerHeight);});
-// Soundtrack is opt-in, loaded on demand, and cached across toggles.
+// Music defaults on; browsers may defer audible playback until a user gesture.
+let musicAttempt=0;
 function updateSoundButton(){const button=$('#sound');button.textContent=soundEnabled?'♪':'♫';button.setAttribute('aria-label',soundEnabled?'Disable background music':'Enable background music');button.setAttribute('aria-pressed',String(soundEnabled));}
-$('#sound').onclick=async()=>{
- if(soundEnabled){soundEnabled=false;audio?.pause();updateSoundButton();toast('Music off.');return;}
- if(!audio){audio=new Audio('assets/audio/walk-soundtrack.mp3');audio.loop=true;audio.volume=.18;audio.preload='none';audio.addEventListener('error',()=>{soundEnabled=false;updateSoundButton();toast('The soundtrack could not be loaded.');});}
- soundEnabled=true;updateSoundButton();
- try{await audio.play();if(!soundEnabled||document.hidden)audio.pause();else toast('Music on.');}
- catch{if(soundEnabled){soundEnabled=false;updateSoundButton();toast('Music could not start. Tap the sound button to try again.');}}
-};
+async function startSoundtrack(){
+ if(!soundEnabled||document.hidden)return;
+ if(!audio){audio=new Audio('assets/audio/walk-soundtrack.mp3');audio.loop=true;audio.volume=.18;audio.preload='auto';audio.hidden=true;document.body.append(audio);audio.addEventListener('error',()=>{soundEnabled=false;updateSoundButton();toast('The soundtrack could not be loaded.');});}
+ const attempt=++musicAttempt;
+ try{await audio.play();if(!soundEnabled||document.hidden)audio.pause();}
+ catch(error){if(attempt!==musicAttempt||!soundEnabled)return;if(error.name!=='NotAllowedError'&&error.name!=='AbortError'){soundEnabled=false;updateSoundButton();toast('Music could not start. Tap the music button to try again.');}}
+}
+$('#sound').onclick=()=>{soundEnabled=!soundEnabled;musicAttempt++;if(soundEnabled)startSoundtrack();else audio?.pause();updateSoundButton();toast(soundEnabled?'Music on.':'Music off.');};
+// Retry blocked autoplay during real input; a visitor's mute choice is preserved.
+addEventListener('pointerdown',event=>{if(!event.target.closest?.('#sound')&&soundEnabled&&audio?.paused)startSoundtrack();},{capture:true});
+addEventListener('keydown',event=>{if(!event.repeat&&event.target!==$('#sound')&&soundEnabled&&audio?.paused)startSoundtrack();},{capture:true});
+updateSoundButton();startSoundtrack();
