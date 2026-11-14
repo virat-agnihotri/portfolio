@@ -13,7 +13,9 @@ for(const [action,target] of [['desktop',[103.75,1.75,-9.909]],['resume',[97.98,
 }
 assert.equal(profile.typingWpm,60);assert.ok(aboutHTML().includes('WPM'));assert.ok(aboutFeatureHTML('desktop').includes('Virat'));
 assert.ok(aboutFeatureHTML('resume').includes(profile.resume));assert.ok((await stat(new URL('./dist/'+aboutMedia.resumePreview,import.meta.url))).size>10000);
-assert.equal(aboutMedia.portrait,null,'No substitute portrait is invented');assert.ok(aboutMedia.certificates.every(certificate=>certificate.image===null));assert.ok(aboutFeatureHTML('certificates').includes('coming soon'));
+assert.equal(aboutMedia.portrait,null,'No substitute portrait is invented');
+for(const item of aboutMedia.certificates){assert.ok((await stat(new URL('./dist/'+item.image,import.meta.url))).size>10000);assert.ok(aboutFeatureHTML('certificate:'+item.id).includes(item.image));}
+assert.ok((await stat(new URL('./dist/'+aboutMedia.typingEvidence,import.meta.url))).size>10000);assert.ok(aboutFeatureHTML('typing').includes(aboutMedia.typingEvidence));assert.ok(!aboutFeatureHTML('certificates').includes('coming soon'));
 const next=new THREE.Vector3(104,1.75,-9.8),previous=new THREE.Vector3(104,1.75,-8);avoidAboutDesk(next,previous);assert.ok(next.z>=-8.53001,'The desktop table blocks walking through it');
 const street=new THREE.Group(),market=createFruitMarket(street,{textures:false});street.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(market);
 assert.ok(bounds.max.x<-4.65,'Fruit market leaves the walking corridor clear');assert.ok(bounds.min.z>0,'Fruit market is at the street entrance');

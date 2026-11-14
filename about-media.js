@@ -1,11 +1,11 @@
-// Personal media stays empty until the user's actual files are supplied.
+// Original personal media supplied by the user; portrait is still pending.
 export const aboutMedia={
  portrait:null,
  resumePreview:'assets/about/resume-preview.png',
- typingEvidence:null,
+ typingEvidence:'assets/about/typing-speed.png',
  certificates:[
-  {id:'hackshift-f1',title:'F1 Grand Prix',organizer:'Hackshift',image:null},
-  {id:'adobe',title:'Adobe Hackathon',organizer:'Adobe',image:null},
-  {id:'iiit-delhi',title:'IIIT Delhi Hackathon',organizer:'Hackshift',image:null}
+  {id:'hackshift-f1',title:'F1 Grand Prix',organizer:'Geek Room & She Builds',image:'assets/about/grandprix-certificate.jpeg'},
+  {id:'adobe',title:'Adobe Hackathon',organizer:'Adobe',image:'assets/about/adobe-certificate.png'},
+  {id:'iiit-delhi',title:'IIIT Delhi Hackathon',organizer:'HackShift · IIIT Delhi',image:'assets/about/hackshift-certificate.png',document:'assets/about/hackshift-certificate.pdf'}
  ]
 };
